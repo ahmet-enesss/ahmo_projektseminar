@@ -1,1 +1,1 @@
-# ahmo_projektseminar
+# Projektseminar
