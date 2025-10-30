@@ -1,6 +1,6 @@
-package com.example.fitnessapp.uebung;
-
+package com.example.fitnessapp.Excercise;
 import jakarta.persistence.*;
+
 import java.util.List;
 
 @Entity
@@ -16,8 +16,10 @@ public class Exercise {
     @ElementCollection
     private List<String> muscleGroups;
 
+    @Column(length = 500)
     private String description;
 
+    // --- Konstruktoren ---
     public Exercise() {}
 
     public Exercise(String name, String category, List<String> muscleGroups, String description) {
@@ -27,7 +29,7 @@ public class Exercise {
         this.description = description;
     }
 
-    // Getter & Setter
+    // --- Getter und Setter ---
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getCategory() { return category; }

@@ -1,13 +1,21 @@
-package com.example.fitnessapp.uebung;
+package com.example.fitnessapp.Excercise;
 
-import com.example.fitnessapp.uebung.model.Exercise;
-import com.example.fitnessapp.uebung.repository.ExerciseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
+
+import java.util.Iterator;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ExerciseService {
-
     private final ExerciseRepository repository;
 
     public ExerciseService(ExerciseRepository repository) {
@@ -15,7 +23,7 @@ public class ExerciseService {
     }
 
     public List<Exercise> getAll() {
-        return repository.findAll();
+        return repository.repository();
     }
 
     public Exercise getById(Long id) {
