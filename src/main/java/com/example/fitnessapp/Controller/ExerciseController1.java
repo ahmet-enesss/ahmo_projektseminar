@@ -15,17 +15,17 @@ import java.util.List;
 public class ExerciseController1 {
 
     @Autowired
-    private ExerciseService1 exerciseService;
+    private ExerciseService1 exerciseService1;
 
     @GetMapping
     public List<Exercise1> getAllExercises() {
-        return exerciseService.getAllExercises();
+        return exerciseService1.getAllExercises();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Exercise1> getExerciseById(@PathVariable Long id) {
         try {
-            return ResponseEntity.ok(exerciseService.getExerciseById(id));
+            return ResponseEntity.ok(exerciseService1.getExerciseById(id));
         } catch (RuntimeException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -34,7 +34,7 @@ public class ExerciseController1 {
     @PostMapping
     public ResponseEntity<?> createExercise(@RequestBody Exercise1 exercise) {
         try {
-            Exercise1 created = exerciseService.createExercise(exercise);
+            Exercise1 created = exerciseService1.createExercise(exercise);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (RuntimeException ex) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
