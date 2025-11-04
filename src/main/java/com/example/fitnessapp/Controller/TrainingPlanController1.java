@@ -6,9 +6,12 @@ import com.example.fitnessapp.Service.TrainingPlanService1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/trainingplans")
@@ -32,7 +35,15 @@ public class TrainingPlanController1 {
     }
 
     @PostMapping
-    public ResponseEntity<?> createTrainingPlan(@RequestBody TrainingPlanRequest request) {
+    public ResponseEntity<?> createTrainingPlan(
+            @Valid @RequestBody TrainingPlanRequest request,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMsg = bindingResult.getAllErrors().stream()
+                    .map(e -> e.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
+        }
         try {
             TrainingPlan1 plan = TrainingPlan1.builder()
                     .name(request.getName())
