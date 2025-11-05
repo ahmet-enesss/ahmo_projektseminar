@@ -24,20 +24,12 @@ public class ExerciseController1 {
 
     @GetMapping("/{id}")
     public ResponseEntity<Exercise1> getExerciseById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(exerciseService1.getExerciseById(id));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return ResponseEntity.ok(exerciseService1.getExerciseById(id));
     }
 
     @PostMapping
-    public ResponseEntity<?> createExercise(@RequestBody Exercise1 exercise) {
-        try {
-            Exercise1 created = exerciseService1.createExercise(exercise);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+    public ResponseEntity<Exercise1> createExercise(@RequestBody Exercise1 exercise) {
+        Exercise1 created = exerciseService1.createExercise(exercise);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

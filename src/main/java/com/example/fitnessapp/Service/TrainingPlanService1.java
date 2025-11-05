@@ -5,6 +5,8 @@ import com.example.fitnessapp.Model.TrainingPlan1;
 import com.example.fitnessapp.Repository.TrainingPlanRepository1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class TrainingPlanService1 {
 
     public TrainingPlan1 createTrainingPlan(TrainingPlan1 plan) {
         if (trainingPlanRepository.findByName(plan.getName()).isPresent()) {
-            throw new RuntimeException("TrainingPlan with this name already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "TrainingPlan with this name already exists");
         }
         return trainingPlanRepository.save(plan);
     }
