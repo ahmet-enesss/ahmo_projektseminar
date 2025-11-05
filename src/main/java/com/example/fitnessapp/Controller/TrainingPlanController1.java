@@ -27,11 +27,7 @@ public class TrainingPlanController1 {
 
     @GetMapping("/{id}")
     public ResponseEntity<TrainingPlan1> getTrainingPlanById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(trainingPlanService.getTrainingPlanById(id));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return ResponseEntity.ok(trainingPlanService.getTrainingPlanById(id));
     }
 
     @PostMapping
@@ -42,17 +38,18 @@ public class TrainingPlanController1 {
             String errorMsg = bindingResult.getAllErrors().stream()
                     .map(e -> e.getDefaultMessage())
                     .collect(Collectors.joining(", "));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(java.util.Map.of(
+                            "status", 400,
+                            "error", "Bad Request",
+                            "message", errorMsg
+                    ));
         }
-        try {
-            TrainingPlan1 plan = TrainingPlan1.builder()
-                    .name(request.getName())
-                    .description(request.getDescription())
-                    .build();
-            TrainingPlan1 created = trainingPlanService.createTrainingPlan(plan);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+        TrainingPlan1 plan = TrainingPlan1.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .build();
+        TrainingPlan1 created = trainingPlanService.createTrainingPlan(plan);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }
