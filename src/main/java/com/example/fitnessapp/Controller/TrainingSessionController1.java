@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -25,26 +26,31 @@ public class TrainingSessionController1 {
 
     @GetMapping("/{id}")
     public ResponseEntity<TrainingSession1> getTrainingSessionById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(trainingSessionService.getTrainingSessionById(id));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return ResponseEntity.ok(trainingSessionService.getTrainingSessionById(id));
     }
 
     @PostMapping
-    public ResponseEntity<?> createTrainingSession(@RequestBody TrainingSessionRequest request) {
-        try {
-            TrainingSession1 created = trainingSessionService.createTrainingSession(
-                    request.getPlanId(),
-                    request.getName(),
-                    request.getScheduledDate(),
-                    request.getExerciseIds()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
+    public ResponseEntity<TrainingSession1> createTrainingSession(@Valid @RequestBody TrainingSessionRequest request) {
+        TrainingSession1 created = trainingSessionService.createTrainingSession(
+                request.getPlanId(),
+                request.getName(),
+                request.getScheduledDate(),
+                request.getExerciseIds()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TrainingSession1> updateTrainingSession(@PathVariable Long id,
+                                                                  @Valid @RequestBody TrainingSessionRequest request) {
+        TrainingSession1 updated = trainingSessionService.updateTrainingSession(
+                id,
+                request.getPlanId(),
+                request.getName(),
+                request.getScheduledDate(),
+                request.getExerciseIds()
+        );
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
