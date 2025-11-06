@@ -17,16 +17,20 @@ public class TrainingSession1 {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //Verbindung zu einem Trainingsplan
     @ManyToOne
     @JoinColumn(name = "training_plan_id", nullable = false)
     private TrainingPlan1 trainingPlan;
 
+    //Name der Trainingssession
     @Column(nullable = false)
     private String name;
 
+    //Datum an dem die Session geplant ist
     @Column(nullable = false)
     private LocalDate scheduledDate;
 
+    //Beziehung zu den Übungen: Eine Session kann mehrere Exercises (Übungen) erhalten
     @ManyToMany
     @JoinTable(
             name = "session_exercises",
