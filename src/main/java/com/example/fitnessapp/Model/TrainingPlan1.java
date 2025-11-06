@@ -1,6 +1,7 @@
 package com.example.fitnessapp.Model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.util.List;
@@ -23,5 +24,6 @@ public class TrainingPlan1 {
     private String description;
 
     @OneToMany(mappedBy = "trainingPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<TrainingSession1> sessions;
 }
