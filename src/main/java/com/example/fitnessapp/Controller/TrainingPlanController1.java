@@ -13,27 +13,28 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/trainingplans")
+@RestController //markiert diese Klasse als Rest-Controller
+@RequestMapping("/api/trainingplans")// Basis-URL für alle Trainingsplänerouten
 public class TrainingPlanController1 {
 
     @Autowired
-    private TrainingPlanService1 trainingPlanService;
+    private TrainingPlanService1 trainingPlanService; //Zugriff auf Service-Klasse
 
-    @GetMapping
+    @GetMapping //Methode die gibt alle Trainingspläne als Liste zurück
     public List<TrainingPlan1> getAllTrainingPlans() {
         return trainingPlanService.getAllTrainingPlans();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") //Methode die gibt einen Trainingsplan nach seiner ID zurück
     public ResponseEntity<TrainingPlan1> getTrainingPlanById(@PathVariable Long id) {
         return ResponseEntity.ok(trainingPlanService.getTrainingPlanById(id));
     }
 
-    @PostMapping
+    @PostMapping // Methode die einen neuen Trainingsplan erstellt
     public ResponseEntity<?> createTrainingPlan(
-            @Valid @RequestBody TrainingPlanRequest request,
+            @Valid @RequestBody TrainingPlanRequest request,//validiert eingehende Daten
             BindingResult bindingResult) {
+        //falls Validierungfehler vorhanden sind
         if (bindingResult.hasErrors()) {
             String errorMsg = bindingResult.getAllErrors().stream()
                     .map(e -> e.getDefaultMessage())
@@ -44,11 +45,12 @@ public class TrainingPlanController1 {
                             "error", "Bad Request",
                             "message", errorMsg
                     ));
-        }
+        }//Erstellung des Plans über den Builder
         TrainingPlan1 plan = TrainingPlan1.builder()
                 .name(request.getName())
                 .description(request.getDescription())
                 .build();
+        //speichert des neuen Plans über den Service
         TrainingPlan1 created = trainingPlanService.createTrainingPlan(plan);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

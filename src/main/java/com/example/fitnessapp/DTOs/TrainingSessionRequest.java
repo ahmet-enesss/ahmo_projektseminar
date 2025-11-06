@@ -1,3 +1,4 @@
+
 package com.example.fitnessapp.DTOs;
 
 import jakarta.validation.constraints.NotBlank;

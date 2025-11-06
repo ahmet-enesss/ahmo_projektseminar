@@ -5,10 +5,10 @@ import lombok.Data;
 
 import java.util.List;
 
-@Data
+@Data//Lombok erzeugt autom. Getter,Setter,etc.
 public class TrainingPlanResponse {
-    private Long id;
-    private String name;
-    private String description;
-    private List<Long> sessionIds;
+    private Long id; //ID der Trainingsplan
+    private String name; //Name der Trainingsplan
+    private String description; //Beschreibung der Trainingsplan
+    private List<Long> sessionIds; //Liste der IDs aller Trainingseinheiten die zu diesem Plan gehören
 }

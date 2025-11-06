@@ -21,6 +21,7 @@ public class TrainingSessionController1 {
 
     @GetMapping
     public List<TrainingSession1> getAllTrainingSessions() {
+
         return trainingSessionService.getAllTrainingSessions();
     }
 

@@ -10,21 +10,21 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-@Service
+@Service //markiert die Klasse als Service-Komponente
 public class TrainingPlanService1 {
 
     @Autowired
-    private TrainingPlanRepository1 trainingPlanRepository;
-
+    private TrainingPlanRepository1 trainingPlanRepository;//Zugriff auf Trainingsrepository
+    // Methode gibt alle Trainingspläne zurück
     public List<TrainingPlan1> getAllTrainingPlans() {
         return trainingPlanRepository.findAll();
     }
-
+    // Methode sucht Trainingsplan nach seiner ID
     public TrainingPlan1 getTrainingPlanById(Long id) {
         return trainingPlanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TrainingPlan not found"));
     }
-
+    // Methode erstellt neuen Trainingsplan
     public TrainingPlan1 createTrainingPlan(TrainingPlan1 plan) {
         if (trainingPlanRepository.findByName(plan.getName()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "TrainingPlan with this name already exists");
