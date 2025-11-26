@@ -1,6 +1,7 @@
 
 package com.example.fitnessapp.DTOs;
 
+import com.example.fitnessapp.Model.TrainingSessionStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -20,6 +21,8 @@ public class TrainingSessionRequest {
     @NotNull
     private LocalDate scheduledDate;
 
+    private TrainingSessionStatus status;
+
     //IDs der Übungen, die in der Session gemaxht werden
     private Set<Long> exerciseIds;
 
@@ -30,6 +33,8 @@ public class TrainingSessionRequest {
     public void setName(String name) { this.name = name; }
     public LocalDate getScheduledDate() { return scheduledDate; }
     public void setScheduledDate(LocalDate scheduledDate) { this.scheduledDate = scheduledDate; }
+    public TrainingSessionStatus getStatus() { return status; }
+    public void setStatus(TrainingSessionStatus status) { this.status = status; }
     public Set<Long> getExerciseIds() { return exerciseIds; }
     public void setExerciseIds(Set<Long> exerciseIds) { this.exerciseIds = exerciseIds; }
 }

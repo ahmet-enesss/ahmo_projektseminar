@@ -23,7 +23,7 @@ public class TrainingPlan1 {
     @Column(nullable = false) // Beschreibung darf nicht leer sein
     private String description;
 
-    @OneToMany(mappedBy = "trainingPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trainingPlan", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnore //verhindert Endlosschleifen bei JSON-Ausgabe
     private List<TrainingSession1> sessions; //Liste aller Trainingseinheiten, die zum Plan gehören
 }

@@ -19,7 +19,7 @@ public class TrainingSession1 {
 
     //Verbindung zu einem Trainingsplan
     @ManyToOne
-    @JoinColumn(name = "training_plan_id", nullable = false)
+    @JoinColumn(name = "training_plan_id")
     private TrainingPlan1 trainingPlan;
 
     //Name der Trainingssession
@@ -29,6 +29,10 @@ public class TrainingSession1 {
     //Datum an dem die Session geplant ist
     @Column(nullable = false)
     private LocalDate scheduledDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TrainingSessionStatus status;
 
     //Beziehung zu den Übungen: Eine Session kann mehrere Exercises (Übungen) erhalten
     @ManyToMany

@@ -11,4 +11,8 @@ public interface TrainingSessionRepository1 extends JpaRepository<TrainingSessio
     Optional<TrainingSession1> findByNameAndScheduledDateAndTrainingPlan_Id(String name, java.time.LocalDate scheduledDate, Long trainingPlanId);
    //Gleiche Abfrage aber mit zusätzlicher ID Prüfung
     Optional<TrainingSession1> findByNameAndScheduledDateAndTrainingPlan_IdAndIdNot(String name, java.time.LocalDate scheduledDate, Long trainingPlanId, Long id);
+
+    java.util.List<TrainingSession1> findByTrainingPlan_IdOrderByScheduledDateAsc(Long trainingPlanId);
+
+    long countByTrainingPlan_Id(Long trainingPlanId);
 }

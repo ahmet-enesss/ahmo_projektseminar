@@ -3,6 +3,7 @@ package com.example.fitnessapp.Service;
 import com.example.fitnessapp.Model.Exercise1;
 import com.example.fitnessapp.Model.TrainingPlan1;
 import com.example.fitnessapp.Model.TrainingSession1;
+import com.example.fitnessapp.Model.TrainingSessionStatus;
 import com.example.fitnessapp.Repository.ExerciseRepository1;
 import com.example.fitnessapp.Repository.TrainingPlanRepository1;
 import com.example.fitnessapp.Repository.TrainingSessionRepository1;
@@ -37,7 +38,8 @@ public class TrainingSessionService1 {
     }
 
     //Erstellt eine neue Trainingssession mit Validierungen
-    public TrainingSession1 createTrainingSession(Long planId, String name, java.time.LocalDate scheduledDate, Set<Long> exerciseIds) {
+    public TrainingSession1 createTrainingSession(Long planId, String name, java.time.LocalDate scheduledDate,
+                                                  TrainingSessionStatus status, Set<Long> exerciseIds) {
         //Prüft ob wichtige Felder fehlen
         if (name == null || name.isBlank() || scheduledDate == null || planId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required fields");
@@ -59,18 +61,22 @@ public class TrainingSessionService1 {
             }
         }
 
+        TrainingSessionStatus finalStatus = status != null ? status : TrainingSessionStatus.GEPLANT;
         //Erstellt ein neues Trainingssession-Objekt und speichert es in der Datenbank
         TrainingSession1 session = TrainingSession1.builder()
                 .trainingPlan(plan)
                 .name(name)
                 .scheduledDate(scheduledDate)
+                .status(finalStatus)
                 .exerciseExecutions(exercises)
                 .build();
 
         return trainingSessionRepository.save(session);
     }
 
-    public TrainingSession1 updateTrainingSession(Long sessionId, Long planId, String name, java.time.LocalDate scheduledDate, Set<Long> exerciseIds) {
+    public TrainingSession1 updateTrainingSession(Long sessionId, Long planId, String name,
+                                                  java.time.LocalDate scheduledDate,
+                                                  TrainingSessionStatus status, Set<Long> exerciseIds) {
         //Holt bestehende Session
         TrainingSession1 existing = trainingSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingSession not found"));
@@ -104,6 +110,7 @@ public class TrainingSessionService1 {
         existing.setTrainingPlan(plan);
         existing.setName(name);
         existing.setScheduledDate(scheduledDate);
+        existing.setStatus(status != null ? status : TrainingSessionStatus.GEPLANT);
         existing.setExerciseExecutions(exercises);
 
         return trainingSessionRepository.save(existing);

@@ -10,4 +10,6 @@ public interface ExerciseRepository1 extends JpaRepository<Exercise1, Long> {
     // Sucht eine Übung anhand ihres Namens
     // Gibt ein Optional zurück (kann also leer sein, wenn kein Eintrag gefunden
     Optional<Exercise1> findByName(String name);
+
+    Optional<Exercise1> findByNameAndIdNot(String name, Long id);
 }

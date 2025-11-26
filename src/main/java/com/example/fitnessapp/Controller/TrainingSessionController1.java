@@ -41,6 +41,7 @@ public class TrainingSessionController1 {
                 request.getPlanId(),
                 request.getName(),
                 request.getScheduledDate(),
+                request.getStatus(),
                 request.getExerciseIds()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(created); //Gibt neu erstellte Session mit HTTP 201 zurück
@@ -55,6 +56,7 @@ public class TrainingSessionController1 {
                 request.getPlanId(),
                 request.getName(),
                 request.getScheduledDate(),
+                request.getStatus(),
                 request.getExerciseIds()
         );
         return ResponseEntity.ok(updated);
