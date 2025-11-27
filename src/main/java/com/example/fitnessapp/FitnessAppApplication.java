@@ -8,6 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.servlet.config.annotation.CorsRegistry; // Wichtig
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer; // Wichtig
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,9 +21,24 @@ public class FitnessAppApplication {
         SpringApplication.run(FitnessAppApplication.class, args);
     }
 
+    // --- DIESE METHODE IST WICHTIG FÜR ANGULAR (CORS) ---
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**") // Erlaubt alle Pfade
+                        .allowedOrigins("http://localhost:4200") // Erlaubt Angular Frontend
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+            }
+        };
+    }
+    // ----------------------------------------------------
+
     @Bean
     CommandLineRunner initDatabase(ExerciseRepository1 exerciseRepo, TrainingPlanRepository1 planRepo) {
         return args -> {
+            // Initialdaten: Bankdrücken
             if (exerciseRepo.findByName("Bankdrücken").isEmpty()) {
                 exerciseRepo.save(Exercise1.builder()
                         .name("Bankdrücken")
@@ -31,6 +48,7 @@ public class FitnessAppApplication {
                         .build());
             }
 
+            // Initialdaten: Push Day Plan
             if (planRepo.findByName("Push Day").isEmpty()) {
                 planRepo.save(TrainingPlan1.builder()
                         .name("Push Day")
