@@ -12,7 +12,9 @@ import {
 })
 export class FitnessService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8080/api'; // Dein Backend URL
+  private baseUrl = 'http://localhost:8080/api';
+
+  // ... (Hier bleiben alle Exercise und TrainingPlan Methoden unverändert) ...
 
   // --- Exercises ---
   getExercises(): Observable<Exercise[]> {
@@ -60,22 +62,33 @@ export class FitnessService {
     return this.http.delete<void>(`${this.baseUrl}/trainingplans/${id}`);
   }
 
-  // Einfaches Error Handling für Validierungsfehler vom Backend
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Ein unbekannter Fehler ist aufgetreten.';
-    if (error.status === 400 || error.status === 409) {
-      // Backend sendet oft { message: "..." } oder Validation Errors
-      errorMessage = error.error.message || error.error.error || JSON.stringify(error.error);
-    }
-    return throwError(() => new Error(errorMessage));
-  }
+  // --- Training Sessions (ERWEITERT) ---
 
   createTrainingSession(sessionRequest: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/trainingsessions`, sessionRequest)
       .pipe(catchError(this.handleError));
   }
 
+  // NEU: Session laden (für Update wichtig)
+  getTrainingSessionById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/trainingsessions/${id}`);
+  }
+
+  // NEU: Session aktualisieren
+  updateTrainingSession(id: number, sessionRequest: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/trainingsessions/${id}`, sessionRequest)
+      .pipe(catchError(this.handleError));
+  }
+
   deleteTrainingSession(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/trainingsessions/${id}`);
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Ein unbekannter Fehler ist aufgetreten.';
+    if (error.status === 400 || error.status === 409) {
+      errorMessage = error.error.message || error.error.error || JSON.stringify(error.error);
+    }
+    return throwError(() => new Error(errorMessage));
   }
 }

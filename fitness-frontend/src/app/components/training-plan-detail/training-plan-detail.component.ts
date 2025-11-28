@@ -80,12 +80,13 @@ import { TrainingPlanDetail, TrainingSessionSummary, Exercise } from '../../mode
           </div>
 
           <div class="table-responsive" *ngIf="plan.hasSessions">
-            <table class="table table-bordered table-hover bg-white">
+            <table class="table table-bordered table-hover bg-white align-middle">
               <thead class="table-dark">
                 <tr>
                   <th>Datum</th>
                   <th>Name</th>
-                  <th>Übungen</th> <th>Status</th>
+                  <th>Übungen</th>
+                  <th>Status</th>
                   <th>Aktion</th>
                 </tr>
               </thead>
@@ -97,14 +98,17 @@ import { TrainingPlanDetail, TrainingSessionSummary, Exercise } from '../../mode
                     <span class="badge bg-secondary">{{ session.exerciseCount }} Übungen</span>
                   </td>
                   <td>
-                    <span class="badge"
-                          [class.bg-success]="session.status === 'ABGESCHLOSSEN'"
-                          [class.bg-primary]="session.status === 'GEPLANT'">
+                    <button class="btn btn-sm w-100"
+                            [class.btn-outline-success]="session.status === 'ABGESCHLOSSEN'"
+                            [class.btn-outline-primary]="session.status === 'GEPLANT'"
+                            (click)="toggleStatus(session)"
+                            title="Klicken zum Ändern">
+                      <i class="bi" [class.bi-check-circle-fill]="session.status === 'ABGESCHLOSSEN'" [class.bi-clock]="session.status === 'GEPLANT'"></i>
                       {{ session.status }}
-                    </span>
+                    </button>
                   </td>
                   <td>
-                    <button class="btn btn-outline-danger btn-sm" (click)="deleteSession(session)">
+                    <button class="btn btn-danger btn-sm" (click)="deleteSession(session)">
                       Entfernen
                     </button>
                   </td>
@@ -132,7 +136,6 @@ export class TrainingPlanDetailComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   plan: TrainingPlanDetail | null = null;
-  // Liste aller verfügbaren Übungen für das Dropdown
   availableExercises: Exercise[] = [];
 
   successMessage = '';
@@ -146,12 +149,12 @@ export class TrainingPlanDetailComponent implements OnInit {
   sessionForm = this.fb.group({
     name: ['', Validators.required],
     scheduledDate: ['', Validators.required],
-    exerciseIds: [[]] // Array für Mehrfachauswahl
+    exerciseIds: [[]]
   });
 
   ngOnInit() {
     this.loadPlanData();
-    this.loadExercises(); // Übungen laden beim Start
+    this.loadExercises();
   }
 
   loadExercises() {
@@ -196,34 +199,71 @@ export class TrainingPlanDetailComponent implements OnInit {
   }
 
   addSession() {
-      if (!this.plan || this.sessionForm.invalid) return;
+    if (!this.plan || this.sessionForm.invalid) return;
 
-      const request = {
-        planId: this.plan.id,
-        name: this.sessionForm.value.name,
-        scheduledDate: this.sessionForm.value.scheduledDate,
-        exerciseIds: this.sessionForm.value.exerciseIds || []
-      };
+    const request = {
+      planId: this.plan.id,
+      name: this.sessionForm.value.name,
+      scheduledDate: this.sessionForm.value.scheduledDate,
+      exerciseIds: this.sessionForm.value.exerciseIds || []
+    };
 
-      this.service.createTrainingSession(request).subscribe({
-        next: () => {
-          this.sessionForm.reset();
+    this.service.createTrainingSession(request).subscribe({
+      next: () => {
+        this.sessionForm.reset();
+        this.sessionForm.get('exerciseIds')?.setValue([] as any);
+        this.loadPlanData();
+        this.successMessage = 'Session hinzugefügt!';
+        this.errorMessage = ''; // Fehler zurücksetzen falls vorher einer da war
+        setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: (err) => {
+        // HIER GEÄNDERT: Direkt err.message anzeigen für einheitliche Fehlermeldung
+        this.errorMessage = err.message;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
-          // --- HIER IST DIE KORREKTUR ---
-          // Wir erzwingen das leere Array, um den TS-Fehler zu umgehen
-          this.sessionForm.get('exerciseIds')?.setValue([] as any);
-          // ------------------------------
+  // NEU: Status umschalten
+  toggleStatus(sessionSummary: TrainingSessionSummary) {
+    // 1. Erst die volle Session laden, damit wir die Exercise-Liste bekommen
+    this.service.getTrainingSessionById(sessionSummary.id).subscribe({
+      next: (fullSession) => {
 
-          this.loadPlanData();
-          this.successMessage = 'Session hinzugefügt!';
-          setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
-        },
-        error: (err) => {
-          this.errorMessage = 'Fehler beim Erstellen der Session: ' + err.message;
-          this.cdr.detectChanges();
-        }
-      });
-    }
+        // 2. Status umkehren
+        const newStatus = fullSession.status === 'GEPLANT' ? 'ABGESCHLOSSEN' : 'GEPLANT';
+
+        // 3. Request bauen (wir brauchen Exercise IDs, nicht die ganzen Objekte)
+        const exerciseIds = fullSession.exerciseExecutions
+            ? fullSession.exerciseExecutions.map((ex: any) => ex.id)
+            : [];
+
+        const updateRequest = {
+          planId: this.plan!.id,
+          name: fullSession.name,
+          scheduledDate: fullSession.scheduledDate,
+          status: newStatus,
+          exerciseIds: exerciseIds
+        };
+
+        // 4. Update senden
+        this.service.updateTrainingSession(sessionSummary.id, updateRequest).subscribe({
+          next: () => {
+            this.loadPlanData(); // Liste aktualisieren
+          },
+          error: (err) => {
+            this.errorMessage = 'Status konnte nicht geändert werden: ' + err.message;
+            this.cdr.detectChanges();
+          }
+        });
+      },
+      error: (err) => {
+        this.errorMessage = 'Fehler beim Laden der Session-Details: ' + err.message;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   deleteSession(session: TrainingSessionSummary) {
     if(!confirm(`Session "${session.name}" am ${session.scheduledDate} wirklich löschen?`)) return;
