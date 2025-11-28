@@ -218,14 +218,14 @@ export class TrainingPlanDetailComponent implements OnInit {
         setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        // HIER GEÄNDERT: Direkt err.message anzeigen für einheitliche Fehlermeldung
+        // Direkt err.message anzeigen für einheitliche Fehlermeldung
         this.errorMessage = err.message;
         this.cdr.detectChanges();
       }
     });
   }
 
-  // NEU: Status umschalten
+  // 1. Status umschalten
   toggleStatus(sessionSummary: TrainingSessionSummary) {
     // 1. Erst die volle Session laden, damit wir die Exercise-Liste bekommen
     this.service.getTrainingSessionById(sessionSummary.id).subscribe({
