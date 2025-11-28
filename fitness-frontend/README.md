@@ -1,32 +1,31 @@
-# FitnessApp Frontend
+FitnessApp Frontend
 Die Anwendung ermöglicht Benutzern das Verwalten von Fitnessübungen, das Erstellen von Trainingsplänen und das Planen sowie Protokollieren von Trainingssessions.
 
-## 🚀 Features
 
-### Übungsverwaltung (Exercises)
-- **Übersicht:** Auflistung aller verfügbaren Übungen mit Name, Kategorie und Muskelgruppen.
-- **Erstellen:** Hinzufügen neuer Übungen mit Dropdown-Auswahl für Kategorien (Gerät, Freihantel, Körpergewicht).
-- **Details & Bearbeiten:** Ansehen und Editieren von Übungsdetails.
-- **Löschen:** Entfernen von Übungen aus der Datenbank.
+Übungsverwaltung (Exercises)
+- Übersicht: Auflistung aller verfügbaren Übungen mit Name, Kategorie und Muskelgruppen.
+- Erstellen: Hinzufügen neuer Übungen mit Dropdown-Auswahl für Kategorien (Gerät, Freihantel, Körpergewicht).
+- Details & Bearbeiten: Ansehen und Editieren von Übungsdetails.
+- Löschen: Entfernen von Übungen aus der Datenbank.
 
-### Trainingspläne (Training Plans)
-- **Übersicht:** Liste aller Trainingspläne inkl. der Anzahl enthaltener Sessions.
-- **Verwaltung:** Erstellen neuer Pläne und Bearbeiten von Metadaten (Name, Beschreibung).
-- **Session-Management:**
-  - Hinzufügen von Trainingseinheiten zu einem Plan.
-  - Zuweisung von Übungen zu einer Session (Mehrfachauswahl möglich).
-  - Löschen von Sessions.
-  - **Status-Tracking:** Umschalten des Status einer Session zwischen "GEPLANT" und "ABGESCHLOSSEN".
+Trainingspläne (Training Plans)
+- Übersicht: Liste aller Trainingspläne inkl. der Anzahl enthaltener Sessions.
+- Verwaltung: Erstellen neuer Pläne und Bearbeiten von Metadaten (Name, Beschreibung).
 
-## 🛠️ Technologien
+Session-Management:
+- Hinzufügen von Trainingseinheiten zu einem Plan.
+- Zuweisung von Übungen zu einer Session (Mehrfachauswahl möglich). 
+- Löschen von Sessions.
 
-- **Framework:** Angular 21.0.1 (Standalone Components)
-- **Sprache:** TypeScript
-- **Styling:** Bootstrap 5 (Responsive Design)
-- **Kommunikation:** HTTP Client (REST API)
-- **Build Tool:** Angular CLI
+Technologien
 
-## 📋 Voraussetzungen
+- Framework: Angular 21.0.1 (Standalone Components)
+- Sprache: TypeScript
+- Styling: Bootstrap 5 (Responsive Design)
+- Kommunikation: HTTP Client (REST API)
+- Build Tool: Angular CLI
+
+Voraussetzungen
 
 Damit das Frontend funktioniert, müssen folgende Voraussetzungen erfüllt sein:
 
