@@ -1,59 +1,60 @@
-# FitnessFrontend
+# FitnessApp Frontend
+Die Anwendung ermöglicht Benutzern das Verwalten von Fitnessübungen, das Erstellen von Trainingsplänen und das Planen sowie Protokollieren von Trainingssessions.
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.1.
+## 🚀 Features
 
-## Development server
+### Übungsverwaltung (Exercises)
+- **Übersicht:** Auflistung aller verfügbaren Übungen mit Name, Kategorie und Muskelgruppen.
+- **Erstellen:** Hinzufügen neuer Übungen mit Dropdown-Auswahl für Kategorien (Gerät, Freihantel, Körpergewicht).
+- **Details & Bearbeiten:** Ansehen und Editieren von Übungsdetails.
+- **Löschen:** Entfernen von Übungen aus der Datenbank.
 
-To start a local development server, run:
+### Trainingspläne (Training Plans)
+- **Übersicht:** Liste aller Trainingspläne inkl. der Anzahl enthaltener Sessions.
+- **Verwaltung:** Erstellen neuer Pläne und Bearbeiten von Metadaten (Name, Beschreibung).
+- **Session-Management:**
+  - Hinzufügen von Trainingseinheiten zu einem Plan.
+  - Zuweisung von Übungen zu einer Session (Mehrfachauswahl möglich).
+  - Löschen von Sessions.
+  - **Status-Tracking:** Umschalten des Status einer Session zwischen "GEPLANT" und "ABGESCHLOSSEN".
 
-```bash
-ng serve
-```
+## 🛠️ Technologien
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Framework:** Angular 21.0.1 (Standalone Components)
+- **Sprache:** TypeScript
+- **Styling:** Bootstrap 5 (Responsive Design)
+- **Kommunikation:** HTTP Client (REST API)
+- **Build Tool:** Angular CLI
 
-## Code scaffolding
+## 📋 Voraussetzungen
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Damit das Frontend funktioniert, müssen folgende Voraussetzungen erfüllt sein:
 
-```bash
-ng generate component component-name
-```
+1. Node.js: (LTS Version empfohlen) muss installiert sein.
+2. Backend: Das zugehörige Spring Boot Backend muss lokal laufen (Standard-Port: `8080`).
+3. Das Backend muss CORS für `http://localhost:4200` aktiviert haben.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Installation & Start
 
-```bash
-ng generate --help
-```
+1. In das Verzeichnis wechseln:
+    cd fitness-frontend
+    
+2. Abhängigkeiten installieren:
+    Lädt alle benötigten Pakete (wie Angular Core, Bootstrap) herunter.
+    npm install
+3. Anwendung starten:
+    Startet den lokalen Entwicklungsserver.
+    npm start
+4. Im Browser öffnen:
+    Die Anwendung ist nun unter `http://localhost:4200/` erreichbar.
 
-## Building
+Projektstruktur
 
-To build the project run:
+Die wichtigsten Ordner und Dateien im Überblick:
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- src/app/components: Enthält die UI-Komponenten (Listen, Detailansichten).
+- exercise-list & exercise-detail
+- training-plan-list & training-plan-detail
+- src/app/services: Enthält den FitnessService für die API-Kommunikation mit dem Backend.
+- src/app/models: TypeScript-Interfaces für Datentypen (Exercise, TrainingPlan, etc.).
+- app.routes.ts: Definition der Routen (Navigation)
