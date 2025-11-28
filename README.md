@@ -20,28 +20,32 @@ Hat eine 1:n-Beziehung zu TrainingSession.
 
 TrainingSession (Trainingseinheit)
 Stellt eine geplante Trainingseinheit an einem bestimmten Datum dar.
-Felder: id, name, scheduledDate.
+Felder: id, name, scheduledDate, status (GEPLANT, ABGESCHLOSSEN).
 Hat eine n:1-Beziehung zu TrainingPlan1 (jede Einheit gehört zu einem Plan).
 Hat eine n:m-Beziehung zu Exercise1 (jede Einheit kann mehrere Übungen enthalten).
 
 Die Anwendung stellt die folgenden REST-Endpunkte unter dem Basispfad /api bereit:
-GET /api/exercises: Ruft eine Liste aller verfügbaren Übungen ab.
-GET /api/exercises/{id}: Ruft eine bestimmte Übung anhand ihrer ID ab.
-POST /api/exercises: Erstellt eine neue Übung.
+
+Übungen (/api/exercises)
+GET `/api/exercises`: Ruft eine Liste aller verfügbaren Übungen ab.
+GET `/api/exercises/{id}`: Ruft eine bestimmte Übung anhand ihrer ID ab. 
+POST `/api/exercises`: Erstellt eine neue Übung.
+PUT `/api/exercises/{id}`: Aktualisiert eine bestehende Übung.
+DELETE `/api/exercises/{id}`: Löscht eine Übung.
 
 Trainingspläne (/api/trainingplans)
-GET /api/trainingplans: Ruft eine Liste aller Trainingspläne ab.
-GET /api/trainingplans/{id}: Ruft einen bestimmten Trainingsplan anhand seiner ID ab.
-POST /api/trainingplans: Erstellt einen neuen Trainingsplan.
-Request Body (DTO): TrainingPlanRequest (name, description)
+GET `/api/trainingplans`: Ruft eine Liste aller Trainingspläne ab.
+GET `/api/trainingplans/{id}`: Ruft einen bestimmten Trainingsplan (inkl. Sessions) ab.
+POST `/api/trainingplans`: Erstellt einen neuen Trainingsplan.
+PUT `/api/trainingplans/{id}`: Aktualisiert Name/Beschreibung eines Plans.
+DELETE `/api/trainingplans/{id}`: Löscht einen Trainingsplan.
 
 Trainingseinheiten (/api/trainingsessions)
-GET /api/trainingsessions: Ruft eine Liste aller Trainingseinheiten ab.
-GET /api/trainingsessions/{id}: Ruft eine bestimmte Trainingseinheit anhand ihrer ID ab.
-
-POST /api/trainingsessions: Erstellt eine neue Trainingseinheit, die einem Plan zugeordnet ist.
-PUT /api/trainingsessions/{id}: Aktualisiert eine bestehende Trainingseinheit.
-DELETE /api/trainingsessions/{id}: Löscht eine Trainingseinheit.
+GET `/api/trainingsessions`: Ruft eine Liste aller Trainingseinheiten ab.
+GET `/api/trainingsessions/{id}`: Ruft eine bestimmte Trainingseinheit ab.
+POST `/api/trainingsessions`: Erstellt eine neue Trainingseinheit, die einem Plan zugeordnet ist.
+PUT `/api/trainingsessions/{id}`: Aktualisiert eine bestehende Trainingseinheit (z.B. Status ändern).
+DELETE `/api/trainingsessions/{id}`: Löscht eine Trainingseinheit.
 
 Setup & Starten
 
