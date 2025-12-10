@@ -9,74 +9,8 @@ import { Exercise } from '../../models/fitness.models';
   selector: 'app-exercise-list',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  template: `
-    <div class="container mt-4">
-      <h2>Übungen Übersicht</h2>
-
-      <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-
-      <div class="card mb-4">
-        <div class="card-header">Neue Übung erstellen</div>
-        <div class="card-body">
-          <form [formGroup]="exerciseForm" (ngSubmit)="createExercise()">
-            <div class="mb-3">
-              <label class="form-label">Name</label>
-              <input type="text" class="form-control" formControlName="name"
-                     [class.is-invalid]="exerciseForm.get('name')?.invalid && exerciseForm.get('name')?.touched">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Kategorie</label>
-              <select class="form-select" formControlName="category">
-                <option value="" disabled>Bitte wählen...</option>
-                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Muskelgruppen (Kommagetrennt)</label>
-              <input type="text" class="form-control" formControlName="muscleGroupsInput" placeholder="z.B. Brust, Trizeps">
-            </div>
-            <div class="mb-3">
-               <label class="form-label">Beschreibung</label>
-               <textarea class="form-control" formControlName="description"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary" [disabled]="exerciseForm.invalid">Erstellen</button>
-          </form>
-        </div>
-      </div>
-
-      <table class="table table-striped table-hover border">
-        <thead class="table-dark">
-          <tr>
-            <th>Name</th>
-            <th>Kategorie</th>
-            <th>Muskelgruppen</th>
-            <th>Aktionen</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let ex of exercises">
-            <td>
-                <a [routerLink]="['/exercises', ex.id]" class="fw-bold text-decoration-none">{{ ex.name }}</a>
-            </td>
-            <td>
-              <span class="badge bg-info text-dark">{{ ex.category }}</span>
-            </td>
-            <td>
-              <span *ngFor="let mg of ex.muscleGroups" class="badge bg-secondary me-1">{{ mg }}</span>
-            </td>
-            <td>
-              <button class="btn btn-danger btn-sm" (click)="deleteExercise(ex)">Löschen</button>
-            </td>
-          </tr>
-          <tr *ngIf="exercises.length === 0">
-            <td colspan="4" class="text-center text-muted">Keine Übungen gefunden.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `
+  templateUrl: './exercise-list.component.html',
+  styleUrl: './exercise-list.component.css'
 })
 export class ExerciseListComponent implements OnInit {
   private service = inject(FitnessService);
