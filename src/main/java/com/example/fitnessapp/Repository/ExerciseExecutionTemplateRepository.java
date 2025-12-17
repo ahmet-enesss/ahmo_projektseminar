@@ -10,6 +10,6 @@ public interface ExerciseExecutionTemplateRepository extends JpaRepository<Exerc
     List<ExerciseExecutionTemplate> findByTrainingSession_IdOrderByOrderIndexAsc(Long trainingSessionId);
 
     boolean existsByTrainingSession_IdAndOrderIndex(Long trainingSessionId, Integer orderIndex);
+
+    boolean existsByTrainingSession_IdAndExercise_Id(Long trainingSessionId, Long exerciseId);
 }
-
-

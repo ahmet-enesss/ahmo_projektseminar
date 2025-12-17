@@ -49,6 +49,11 @@ public class ExerciseExecutionTemplateService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order index already used in this session");
         }
 
+        // Neu: prüfe, ob diese Übung bereits in der Session existiert
+        if (templateRepository.existsByTrainingSession_IdAndExercise_Id(session.getId(), exercise.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise already added to this session");
+        }
+
         ExerciseExecutionTemplate entity = ExerciseExecutionTemplate.builder()
                 .trainingSession(session)
                 .exercise(exercise)
@@ -75,6 +80,12 @@ public class ExerciseExecutionTemplateService {
 
         Exercise1 exercise = exerciseRepository.findById(request.getExerciseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
+
+        // Neu: prüfe beim Update, ob durch Änderung der Übung ein Duplikat entsteht
+        if (!existing.getExercise().getId().equals(exercise.getId()) &&
+                templateRepository.existsByTrainingSession_IdAndExercise_Id(existing.getTrainingSession().getId(), exercise.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise already added to this session");
+        }
 
         existing.setExercise(exercise);
         existing.setPlannedSets(request.getPlannedSets());
@@ -112,5 +123,4 @@ public class ExerciseExecutionTemplateService {
                 .build();
     }
 }
-
 

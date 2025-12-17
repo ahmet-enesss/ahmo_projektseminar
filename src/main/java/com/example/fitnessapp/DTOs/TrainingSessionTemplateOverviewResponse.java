@@ -9,12 +9,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrainingSessionSummaryResponse {
+public class TrainingSessionTemplateOverviewResponse {
     private Long id;
     private String name;
+    private Long planId;
+    private String planName;
     private Integer orderIndex;
-    private int exerciseCount;
+    private Integer exerciseCount;
+    private Long executionCount; // Wie oft wurde diese Session bereits durchgeführt
 }
-
-
 

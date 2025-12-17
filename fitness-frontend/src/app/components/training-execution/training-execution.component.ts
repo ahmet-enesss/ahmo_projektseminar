@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FitnessService } from '../../services/fitness.service';
 import { ExecutionLog, SessionLog } from '../../models/fitness.models';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-training-execution',
@@ -44,6 +45,12 @@ export class TrainingExecutionComponent implements OnInit {
 
   private buildFormForExecution(exec: ExecutionLog) {
     const form = this.fb.group({
+      // geplante Werte (editable während IN_PROGRESS)
+      plannedSets: [exec.plannedSets, [Validators.required, Validators.min(1)]],
+      plannedReps: [exec.plannedReps, [Validators.required, Validators.min(1)]],
+      plannedWeight: [exec.plannedWeight, [Validators.required, Validators.min(0)]],
+
+      // ist-Werte
       actualSets: [exec.actualSets, [Validators.required, Validators.min(1)]],
       actualReps: [exec.actualReps, [Validators.required, Validators.min(1)]],
       actualWeight: [exec.actualWeight, [Validators.required, Validators.min(0)]],
@@ -60,6 +67,13 @@ export class TrainingExecutionComponent implements OnInit {
         this.logId = log.id;
         this.initForms();
         this.cdr.detectChanges();
+
+        // Retry: falls executions leer sind (Race-Condition), nochmals laden
+        if (!this.log.executions || this.log.executions.length === 0) {
+          setTimeout(() => {
+            this.loadLog();
+          }, 300);
+        }
       },
       error: (err) => {
         this.errorMessage = err.message;
@@ -72,6 +86,14 @@ export class TrainingExecutionComponent implements OnInit {
     this.service.getSessionLog(this.logId).subscribe({
       next: (log) => {
         this.log = log;
+        // Fallback: falls executions leer sind, lade session templates und baue temporäre executions
+        if (!this.log.executions || this.log.executions.length === 0) {
+          this.tryBuildFallbackExecutions(this.log.sessionTemplateId).then(() => {
+            this.initForms();
+            this.cdr.detectChanges();
+          });
+          return;
+        }
         this.initForms();
         this.cdr.detectChanges();
       },
@@ -80,6 +102,31 @@ export class TrainingExecutionComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Versucht, temporäre Execution-Objekte aus Session-Templates zu erstellen (nur Anzeige)
+  private async tryBuildFallbackExecutions(sessionTemplateId: number) {
+    try {
+      const templates = await firstValueFrom(this.service.getExerciseTemplatesForSession(sessionTemplateId));
+      if (!this.log) return;
+      // Map templates to ExecutionLog-like objects for UI (note: ids will be negative to indicate temporary)
+      this.log.executions = templates.map((t, idx) => ({
+        id: -(idx + 1),
+        exerciseTemplateId: t.id,
+        exerciseName: t.exerciseName,
+        plannedSets: t.plannedSets,
+        plannedReps: t.plannedReps,
+        plannedWeight: t.plannedWeight,
+        actualSets: t.plannedSets,
+        actualReps: t.plannedReps,
+        actualWeight: t.plannedWeight,
+        completed: false,
+        notes: ''
+      }));
+      this.cdr.detectChanges();
+    } catch (e: any) {
+      // ignore fallback errors
+    }
   }
 
   private initForms() {
@@ -99,11 +146,17 @@ export class TrainingExecutionComponent implements OnInit {
     const value = form.value;
     this.service.updateExecutionLog({
       executionLogId: exec.id,
+      // actual values
       actualSets: value.actualSets,
       actualReps: value.actualReps,
       actualWeight: value.actualWeight,
+      // optional: mark completed and notes
       completed: value.completed,
-      notes: value.notes
+      notes: value.notes,
+      // neu: geplante Werte mitschicken, wenn verändert
+      plannedSets: value.plannedSets,
+      plannedReps: value.plannedReps,
+      plannedWeight: value.plannedWeight
     }).subscribe({
       next: () => {
         this.successMessage = 'Übung gespeichert';
@@ -166,5 +219,3 @@ export class TrainingExecutionComponent implements OnInit {
     this.location.back();
   }
 }
-
-

@@ -59,33 +59,26 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Geplantes Datum</label>
+              <label class="form-label">Reihenfolge im Plan (1-30)</label>
               <input
-                type="date"
+                type="number"
                 class="form-control"
-                formControlName="scheduledDate"
-                [class.is-invalid]="sessionForm.get('scheduledDate')?.invalid && (sessionForm.get('scheduledDate')?.dirty || sessionForm.get('scheduledDate')?.touched)"
+                formControlName="orderIndex"
+                min="1"
+                max="30"
+                [class.is-invalid]="sessionForm.get('orderIndex')?.invalid && (sessionForm.get('orderIndex')?.dirty || sessionForm.get('orderIndex')?.touched)"
               />
               <div class="invalid-feedback">
-                Datum ist erforderlich.
+                Reihenfolge muss zwischen 1 und 30 liegen.
               </div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Übungen hinzufügen</label>
-              <select multiple class="form-select exercise-select" formControlName="exerciseIds">
-                <option *ngFor="let ex of availableExercises" [value]="ex.id">
-                  {{ ex.name }} ({{ ex.category }})
-                </option>
-              </select>
-              <small class="text-muted d-block mt-1">
-                Halte <kbd>STRG</kbd> (Win) oder <kbd>CMD</kbd> (Mac) gedrückt, um mehrere zu wählen.
-              </small>
-            </div>
-
             <button type="submit" class="btn btn-primary w-100" [disabled]="sessionForm.invalid">
-              Session hinzufügen
+              Session-Vorlage hinzufügen
             </button>
+            <small class="text-muted d-block mt-2">
+              Hinweis: Übungen können später in der Session-Detailansicht hinzugefügt werden.
+            </small>
           </form>
         </div>
       </div>
@@ -101,30 +94,24 @@
         <table class="table table-bordered table-hover bg-white align-middle">
           <thead class="table-dark">
           <tr>
-            <th>Datum</th>
+            <th>Reihenfolge</th>
             <th>Name</th>
             <th>Übungen</th>
-            <th>Status</th>
-            <th>Aktion</th>
+            <th>Aktionen</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let session of plan.sessions">
-            <td>{{ session.scheduledDate }}</td>
-            <td>{{ session.name }}</td>
             <td>
-              <span class="badge bg-secondary">{{ session.exerciseCount }} Übungen</span>
+              <span class="badge bg-info text-dark">{{ session.orderIndex }}</span>
             </td>
             <td>
-              <button
-                class="btn btn-sm w-100"
-                [class.btn-outline-success]="session.status === 'ABGESCHLOSSEN'"
-                [class.btn-outline-primary]="session.status === 'GEPLANT'"
-                (click)="toggleStatus(session)"
-              >
-                <i class="bi" [class.bi-check-circle-fill]="session.status === 'ABGESCHLOSSEN'" [class.bi-clock]="session.status === 'GEPLANT'"></i>
-                {{ session.status }}
-              </button>
+              <a [routerLink]="['/plans', plan.id, 'sessions', session.id]" class="fw-bold text-decoration-none">
+                {{ session.name }}
+              </a>
+            </td>
+            <td>
+              <span class="badge bg-secondary">{{ session.exerciseCount }} Übungen</span>
             </td>
             <td class="d-flex gap-2">
               <a class="btn btn-sm btn-outline-info"
@@ -132,7 +119,7 @@
                 Vorlage / Übungen
               </a>
               <button class="btn btn-danger btn-sm" (click)="deleteSession(session)">
-                Entfernen
+                Löschen
               </button>
             </td>
           </tr>

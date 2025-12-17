@@ -37,83 +37,21 @@ public class TrainingSessionService1 {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingSession not found"));
     }
 
-    //Erstellt eine neue Trainingssession mit Validierungen
+    // DEPRECATED: Diese Methoden verwenden das alte Modell. Bitte verwenden Sie TrainingSessionTemplateService stattdessen.
+    // Diese Methoden bleiben für Rückwärtskompatibilität, funktionieren aber nicht mehr korrekt.
+    @Deprecated
     public TrainingSession1 createTrainingSession(Long planId, String name, java.time.LocalDate scheduledDate,
                                                   TrainingSessionStatus status, Set<Long> exerciseIds) {
-        //Prüft ob wichtige Felder fehlen
-        if (name == null || name.isBlank() || scheduledDate == null || planId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required fields");
-        }
-       //Prüft ob die Session bereits existiert
-        if (trainingSessionRepository.findByNameAndScheduledDateAndTrainingPlan_Id(name, scheduledDate, planId).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "TrainingSession duplicate for plan/date/name");
-        }
-        //Holt den Trainingsplan oder wirft 404
-        TrainingPlan1 plan = trainingPlanRepository.findById(planId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingPlan not found"));
-
-        //Lädt alle Übungen basierend ihrer IDs
-        Set<Exercise1> exercises = new HashSet<>();
-        if (exerciseIds != null) {
-            for (Long id : exerciseIds) {
-                exercises.add(exerciseRepository.findById(id)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise with ID " + id + " not found")));
-            }
-        }
-
-        TrainingSessionStatus finalStatus = status != null ? status : TrainingSessionStatus.GEPLANT;
-        //Erstellt ein neues Trainingssession-Objekt und speichert es in der Datenbank
-        TrainingSession1 session = TrainingSession1.builder()
-                .trainingPlan(plan)
-                .name(name)
-                .scheduledDate(scheduledDate)
-                .status(finalStatus)
-                .exerciseExecutions(exercises)
-                .build();
-
-        return trainingSessionRepository.save(session);
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+            "Diese Methode ist veraltet. Bitte verwenden Sie /api/session-templates stattdessen.");
     }
 
+    @Deprecated
     public TrainingSession1 updateTrainingSession(Long sessionId, Long planId, String name,
                                                   java.time.LocalDate scheduledDate,
                                                   TrainingSessionStatus status, Set<Long> exerciseIds) {
-        //Holt bestehende Session
-        TrainingSession1 existing = trainingSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingSession not found"));
-
-        //Validierung der Eingaben
-        if (name == null || name.isBlank() || scheduledDate == null || planId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required fields");
-        }
-
-       //Prüft ob dieselbe Session existiert (mit anderer ID)
-        if (trainingSessionRepository
-                .findByNameAndScheduledDateAndTrainingPlan_IdAndIdNot(name, scheduledDate, planId, sessionId)
-                .isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "TrainingSession duplicate for plan/date/name");
-        }
-
-      //Holt den zugehörigen Plan
-        TrainingPlan1 plan = trainingPlanRepository.findById(planId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingPlan not found"));
-
-       //Holt Übungen neu
-        Set<Exercise1> exercises = new HashSet<>();
-        if (exerciseIds != null) {
-            for (Long id : exerciseIds) {
-                exercises.add(exerciseRepository.findById(id)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise with ID " + id + " not found")));
-            }
-        }
-
-        //Aktualisiert die Werte
-        existing.setTrainingPlan(plan);
-        existing.setName(name);
-        existing.setScheduledDate(scheduledDate);
-        existing.setStatus(status != null ? status : TrainingSessionStatus.GEPLANT);
-        existing.setExerciseExecutions(exercises);
-
-        return trainingSessionRepository.save(existing);
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+            "Diese Methode ist veraltet. Bitte verwenden Sie /api/session-templates stattdessen.");
     }
 
     //Löscht eine Trainingssession anhand der ID

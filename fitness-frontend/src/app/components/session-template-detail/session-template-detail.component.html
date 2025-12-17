@@ -22,16 +22,23 @@
           <form [formGroup]="form" (ngSubmit)="save()">
             <div class="mb-3">
               <label class="form-label">Übung</label>
-              <select
-                class="form-select"
-                formControlName="exerciseId"
-                [class.is-invalid]="form.get('exerciseId')?.invalid && (form.get('exerciseId')?.dirty || form.get('exerciseId')?.touched)"
-              >
-                <option [ngValue]="null" disabled>Bitte wählen...</option>
-                <option *ngFor="let ex of availableExercises" [ngValue]="ex.id">
-                  {{ ex.name }} ({{ ex.category }})
-                </option>
-              </select>
+              <ng-container *ngIf="availableExercises && availableExercises.length > 0; else loadingExercises">
+                <select
+                  class="form-select"
+                  formControlName="exerciseId"
+                  [class.is-invalid]="form.get('exerciseId')?.invalid && (form.get('exerciseId')?.dirty || form.get('exerciseId')?.touched)"
+                >
+                  <option value="" disabled>Bitte wählen...</option>
+                  <option *ngFor="let ex of getSelectableExercises()" [value]="ex.id">
+                    {{ ex.name }} ({{ ex.category }})
+                  </option>
+                </select>
+              </ng-container>
+              <ng-template #loadingExercises>
+                <select class="form-select" disabled>
+                  <option>Lade Übungen...</option>
+                </select>
+              </ng-template>
               <div class="invalid-feedback">Bitte eine Übung auswählen.</div>
             </div>
 

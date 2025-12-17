@@ -23,9 +23,8 @@ export interface TrainingPlanOverview {
 export interface TrainingSessionSummary {
   id: number;
   name: string;
-  scheduledDate: string; // LocalDate wird als String übertragen
+  orderIndex: number;
   exerciseCount: number;
-  status: 'GEPLANT' | 'ABGESCHLOSSEN';
 }
 
 export interface TrainingPlanDetail {
@@ -81,4 +80,22 @@ export interface SessionLog {
   status: LogStatus;
   notes?: string;
   executions: ExecutionLog[];
+}
+
+// --- Session-Template Übersicht (Sprint 3) ---
+
+export interface TrainingSessionTemplateOverview {
+  id: number;
+  name: string;
+  planId?: number;
+  planName: string;
+  orderIndex: number;
+  exerciseCount: number;
+  executionCount: number;
+}
+
+export interface TrainingSessionTemplateRequest {
+  planId?: number;
+  name: string;
+  orderIndex: number;
 }

@@ -32,8 +32,7 @@ export class TrainingPlanDetailComponent implements OnInit {
 
   sessionForm = this.fb.group({
     name: ['', Validators.required],
-    scheduledDate: ['', Validators.required],
-    exerciseIds: [[]]
+    orderIndex: [1, [Validators.required, Validators.min(1), Validators.max(30)]]
   });
 
   ngOnInit() {
@@ -87,74 +86,35 @@ export class TrainingPlanDetailComponent implements OnInit {
 
     const request = {
       planId: this.plan.id,
-      name: this.sessionForm.value.name,
-      scheduledDate: this.sessionForm.value.scheduledDate,
-      exerciseIds: this.sessionForm.value.exerciseIds || []
+      name: this.sessionForm.value.name!,
+      orderIndex: this.sessionForm.value.orderIndex!
     };
 
-    this.service.createTrainingSession(request).subscribe({
+    this.service.createSessionTemplate(request).subscribe({
       next: () => {
         this.sessionForm.reset();
-        this.sessionForm.get('exerciseIds')?.setValue([] as any);
+        this.sessionForm.get('orderIndex')?.setValue(1);
         this.loadPlanData();
-        this.successMessage = 'Session hinzugefügt!';
-        this.errorMessage = ''; // Fehler zurücksetzen falls vorher einer da war
+        this.successMessage = 'Session-Vorlage hinzugefügt!';
+        this.errorMessage = '';
         setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        // Direkt err.message anzeigen für einheitliche Fehlermeldung
         this.errorMessage = err.message;
         this.cdr.detectChanges();
       }
     });
   }
 
-  // 1. Status umschalten
-  toggleStatus(sessionSummary: TrainingSessionSummary) {
-    // 1. Erst die volle Session laden, damit wir die Exercise-Liste bekommen
-    this.service.getTrainingSessionById(sessionSummary.id).subscribe({
-      next: (fullSession) => {
-
-        // 2. Status umkehren
-        const newStatus = fullSession.status === 'GEPLANT' ? 'ABGESCHLOSSEN' : 'GEPLANT';
-
-        // 3. Request bauen (wir brauchen Exercise IDs, nicht die ganzen Objekte)
-        const exerciseIds = fullSession.exerciseExecutions
-            ? fullSession.exerciseExecutions.map((ex: any) => ex.id)
-            : [];
-
-        const updateRequest = {
-          planId: this.plan!.id,
-          name: fullSession.name,
-          scheduledDate: fullSession.scheduledDate,
-          status: newStatus,
-          exerciseIds: exerciseIds
-        };
-
-        // 4. Update senden
-        this.service.updateTrainingSession(sessionSummary.id, updateRequest).subscribe({
-          next: () => {
-            this.loadPlanData(); // Liste aktualisieren
-          },
-          error: (err) => {
-            this.errorMessage = 'Status konnte nicht geändert werden: ' + err.message;
-            this.cdr.detectChanges();
-          }
-        });
-      },
-      error: (err) => {
-        this.errorMessage = 'Fehler beim Laden der Session-Details: ' + err.message;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
   deleteSession(session: TrainingSessionSummary) {
-    if(!confirm(`Session "${session.name}" am ${session.scheduledDate} wirklich löschen?`)) return;
+    if(!confirm(`Session-Vorlage "${session.name}" wirklich löschen?`)) return;
 
-    this.service.deleteTrainingSession(session.id).subscribe({
+    this.service.deleteSessionTemplate(session.id).subscribe({
       next: () => {
         this.loadPlanData();
+        this.successMessage = 'Session-Vorlage gelöscht';
+        setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.errorMessage = 'Löschen fehlgeschlagen: ' + err.message;

@@ -5,9 +5,10 @@ import com.example.fitnessapp.DTOs.TrainingPlanDetailResponse;
 import com.example.fitnessapp.DTOs.TrainingPlanOverviewResponse;
 import com.example.fitnessapp.DTOs.TrainingSessionSummaryResponse;
 import com.example.fitnessapp.DTOs.TrainingPlanRequest;
+import com.example.fitnessapp.Model.ExerciseExecutionTemplate;
 import com.example.fitnessapp.Model.TrainingPlan1;
 import com.example.fitnessapp.Model.TrainingSession1;
-import com.example.fitnessapp.Model.TrainingSessionStatus;
+import com.example.fitnessapp.Repository.ExerciseExecutionTemplateRepository;
 import com.example.fitnessapp.Repository.TrainingPlanRepository1;
 import com.example.fitnessapp.Repository.TrainingSessionRepository1;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class TrainingPlanService1 {
     private TrainingPlanRepository1 trainingPlanRepository;//Zugriff auf Trainingsrepository
     @Autowired
     private TrainingSessionRepository1 trainingSessionRepository;
+    @Autowired
+    private ExerciseExecutionTemplateRepository exerciseTemplateRepository;
     // Methode gibt alle Trainingspläne zurück
     public List<TrainingPlanOverviewResponse> getAllTrainingPlans() {
         return trainingPlanRepository.findAll().stream()
@@ -41,7 +44,7 @@ public class TrainingPlanService1 {
         TrainingPlan1 plan = trainingPlanRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingPlan not found"));
         List<TrainingSessionSummaryResponse> sessions = trainingSessionRepository
-                .findByTrainingPlan_IdOrderByScheduledDateAsc(id)
+                .findByTrainingPlan_IdOrderByOrderIndexAsc(id)
                 .stream()
                 .map(this::mapToSummary)
                 .collect(Collectors.toList());
@@ -77,7 +80,7 @@ public class TrainingPlanService1 {
     public void deleteTrainingPlan(Long id) {
         TrainingPlan1 plan = trainingPlanRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingPlan not found"));
-        List<TrainingSession1> sessions = trainingSessionRepository.findByTrainingPlan_IdOrderByScheduledDateAsc(id);
+        List<TrainingSession1> sessions = trainingSessionRepository.findByTrainingPlan_IdOrderByOrderIndexAsc(id);
         for (TrainingSession1 session : sessions) {
             session.setTrainingPlan(null);
         }
@@ -86,12 +89,14 @@ public class TrainingPlanService1 {
     }
 
     private TrainingSessionSummaryResponse mapToSummary(TrainingSession1 session) {
+        // Anzahl Übungen über ExerciseExecutionTemplate zählen
+        int exerciseCount = exerciseTemplateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(session.getId()).size();
+        
         return TrainingSessionSummaryResponse.builder()
                 .id(session.getId())
                 .name(session.getName())
-                .scheduledDate(session.getScheduledDate())
-                .exerciseCount(session.getExerciseExecutions() != null ? session.getExerciseExecutions().size() : 0)
-                .status(session.getStatus() != null ? session.getStatus() : TrainingSessionStatus.GEPLANT)
+                .orderIndex(session.getOrderIndex())
+                .exerciseCount(exerciseCount)
                 .build();
     }
 }

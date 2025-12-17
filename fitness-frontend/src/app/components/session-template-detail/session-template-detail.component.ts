@@ -71,6 +71,16 @@ export class SessionTemplateDetailComponent implements OnInit {
     });
   }
 
+  // Gibt die Übungen zurück, die für das Hinzufügen auswählbar sind.
+  // Bereits in der Session verwendete Übungen werden ausgeblendet, außer wenn wir gerade diese Vorlage bearbeiten.
+  getSelectableExercises(): Exercise[] {
+    const used = new Set<number>(this.templates.map(t => t.exerciseId));
+    if (this.editingTemplate) {
+      used.delete(this.editingTemplate.exerciseId);
+    }
+    return this.availableExercises.filter(ex => !used.has(ex.id));
+  }
+
   startCreate() {
     this.editingTemplate = null;
     this.form.reset({

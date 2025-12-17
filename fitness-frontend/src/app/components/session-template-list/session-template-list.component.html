@@ -1,0 +1,107 @@
+<div class="container mt-4">
+  <h2>Trainingssession-Vorlagen</h2>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <!-- Formular zum Erstellen/Bearbeiten -->
+  <div class="card mb-4">
+    <div class="card-header">
+      {{ editingSessionId ? 'Session-Vorlage bearbeiten' : 'Neue Session-Vorlage erstellen' }}
+    </div>
+    <div class="card-body">
+      <form [formGroup]="sessionForm" (ngSubmit)="editingSessionId ? updateSession() : createSession()">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Name der Session</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="name"
+              placeholder="z.B. Brusttraining A"
+              [class.is-invalid]="sessionForm.get('name')?.invalid && (sessionForm.get('name')?.dirty || sessionForm.get('name')?.touched)"
+            />
+            <div class="invalid-feedback">
+              Der Name ist erforderlich.
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Trainingsplan (optional)</label>
+            <select class="form-select" formControlName="planId">
+              <option [value]="null">Kein Plan</option>
+              <option *ngFor="let plan of plans" [value]="plan.id">{{ plan.name }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-2 mb-3">
+            <label class="form-label">Reihenfolge</label>
+            <input
+              type="number"
+              class="form-control"
+              formControlName="orderIndex"
+              min="1"
+              max="30"
+              [class.is-invalid]="sessionForm.get('orderIndex')?.invalid && (sessionForm.get('orderIndex')?.dirty || sessionForm.get('orderIndex')?.touched)"
+            />
+            <div class="invalid-feedback">
+              Reihenfolge muss zwischen 1 und 30 liegen.
+            </div>
+          </div>
+
+          <div class="col-md-2 mb-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100" [disabled]="sessionForm.invalid">
+              {{ editingSessionId ? 'Speichern' : 'Erstellen' }}
+            </button>
+            <button *ngIf="editingSessionId" type="button" class="btn btn-secondary ms-2" (click)="cancelEdit()">
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Übersichtstabelle -->
+  <div class="table-responsive">
+    <table class="table table-striped table-hover border">
+      <thead class="table-dark">
+        <tr>
+          <th>Name</th>
+          <th>Trainingsplan</th>
+          <th>Reihenfolge</th>
+          <th>Anzahl Übungen</th>
+          <th>Durchgeführt</th>
+          <th>Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let session of sessions">
+          <td>
+            <a [routerLink]="['/plans', session.planId || 0, 'sessions', session.id]" class="fw-bold text-decoration-none">
+              {{ session.name }}
+            </a>
+          </td>
+          <td>{{ session.planName }}</td>
+          <td>
+            <span class="badge bg-info text-dark">{{ session.orderIndex }}</span>
+          </td>
+          <td>
+            <span class="badge bg-secondary">{{ session.exerciseCount }} Übungen</span>
+          </td>
+          <td>
+            <span class="badge bg-success">{{ session.executionCount }}x</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-primary me-1" (click)="startEdit(session)">Bearbeiten</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteSession(session)">Löschen</button>
+          </td>
+        </tr>
+        <tr *ngIf="sessions.length === 0">
+          <td colspan="6" class="text-center text-muted">Noch keine Session-Vorlagen vorhanden.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

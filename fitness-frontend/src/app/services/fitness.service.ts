@@ -5,7 +5,8 @@ import { catchError } from 'rxjs/operators';
 import {
   Exercise, ExerciseRequest,
   TrainingPlanOverview, TrainingPlanDetail, TrainingPlanRequest,
-  ExerciseExecutionTemplate, SessionLog, ExecutionLog
+  ExerciseExecutionTemplate, SessionLog, ExecutionLog,
+  TrainingSessionTemplateOverview, TrainingSessionTemplateRequest
 } from '../models/fitness.models';
 
 @Injectable({
@@ -65,24 +66,37 @@ export class FitnessService {
 
   // --- Training Sessions (ERWEITERT) ---
 
+  // Anmerkung: Backend verwendet Session-Templates unter /api/session-templates.
+  // Die alten /api/trainingsessions create/update Endpunkte sind im Backend veraltet.
+  // Um Inkonsistenzen zu vermeiden, leiten wir Frontend-Aufrufe auf die Session-Template-APIs um.
+
   createTrainingSession(sessionRequest: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/trainingsessions`, sessionRequest)
-      .pipe(catchError(this.handleError));
+    // Mappe Request-Felder falls nötig: erwartet planId, name, orderIndex
+    const templateReq: TrainingSessionTemplateRequest = {
+      planId: sessionRequest.planId ?? null,
+      name: sessionRequest.name ?? 'Neue Session',
+      orderIndex: sessionRequest.orderIndex ?? 1
+    };
+    return this.createSessionTemplate(templateReq);
   }
 
-  // NEU: Session laden (für Update wichtig)
+  // NEU: Session laden (für Update wichtig) - wird jetzt auf Session-Templates gemappt
   getTrainingSessionById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/trainingsessions/${id}`);
+    return this.getSessionTemplateById(id);
   }
 
-  // NEU: Session aktualisieren
+  // NEU: Session aktualisieren - leitet auf Session-Templates um
   updateTrainingSession(id: number, sessionRequest: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/trainingsessions/${id}`, sessionRequest)
-      .pipe(catchError(this.handleError));
+    const templateReq: TrainingSessionTemplateRequest = {
+      planId: sessionRequest.planId ?? null,
+      name: sessionRequest.name ?? 'Session',
+      orderIndex: sessionRequest.orderIndex ?? 1
+    };
+    return this.updateSessionTemplate(id, templateReq);
   }
 
   deleteTrainingSession(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/trainingsessions/${id}`);
+    return this.deleteSessionTemplate(id);
   }
 
   // --- Exercise-Templates pro Session (Sprint 3) ---
@@ -137,6 +151,10 @@ export class FitnessService {
     actualWeight: number;
     completed?: boolean;
     notes?: string;
+    // optional geplante Werte (werden vom Backend akzeptiert)
+    plannedSets?: number;
+    plannedReps?: number;
+    plannedWeight?: number;
   }): Observable<ExecutionLog> {
     return this.http
       .put<ExecutionLog>(`${this.baseUrl}/sessionlogs/execution`, payload)
@@ -152,6 +170,38 @@ export class FitnessService {
   abortTraining(logId: number): Observable<void> {
     return this.http
       .delete<void>(`${this.baseUrl}/sessionlogs/${logId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // --- Session-Templates (unabhängige Verwaltung) ---
+
+  getSessionTemplates(): Observable<TrainingSessionTemplateOverview[]> {
+    return this.http
+      .get<TrainingSessionTemplateOverview[]>(`${this.baseUrl}/session-templates`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getSessionTemplateById(id: number): Observable<TrainingSessionTemplateOverview> {
+    return this.http
+      .get<TrainingSessionTemplateOverview>(`${this.baseUrl}/session-templates/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  createSessionTemplate(request: TrainingSessionTemplateRequest): Observable<TrainingSessionTemplateOverview> {
+    return this.http
+      .post<TrainingSessionTemplateOverview>(`${this.baseUrl}/session-templates`, request)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateSessionTemplate(id: number, request: TrainingSessionTemplateRequest): Observable<TrainingSessionTemplateOverview> {
+    return this.http
+      .put<TrainingSessionTemplateOverview>(`${this.baseUrl}/session-templates/${id}`, request)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteSessionTemplate(id: number): Observable<void> {
+    return this.http
+      .delete<void>(`${this.baseUrl}/session-templates/${id}`)
       .pipe(catchError(this.handleError));
   }
 
