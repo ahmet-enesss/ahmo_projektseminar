@@ -1,14 +1,14 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FitnessService } from '../../services/fitness.service';
 import { TrainingPlanDetail, TrainingSessionSummary, Exercise } from '../../models/fitness.models';
 
 @Component({
   selector: 'app-training-plan-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './training-plan-detail.component.html',
   styleUrl: './training-plan-detail.component.css'
 })

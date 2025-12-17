@@ -41,3 +41,44 @@ export interface TrainingPlanRequest {
   name: string;
   description: string;
 }
+
+// --- Sprint 3: Exercise-Templates und Trainingslogs ---
+
+export interface ExerciseExecutionTemplate {
+  id: number;
+  sessionId: number;
+  exerciseId: number;
+  exerciseName: string;
+  exerciseCategory: string;
+  plannedSets: number;
+  plannedReps: number;
+  plannedWeight: number;
+  orderIndex: number;
+}
+
+export type LogStatus = 'IN_PROGRESS' | 'COMPLETED';
+
+export interface ExecutionLog {
+  id: number;
+  exerciseTemplateId: number;
+  exerciseName: string;
+  plannedSets: number;
+  plannedReps: number;
+  plannedWeight: number;
+  actualSets: number;
+  actualReps: number;
+  actualWeight: number;
+  completed: boolean;
+  notes?: string;
+}
+
+export interface SessionLog {
+  id: number;
+  sessionTemplateId: number;
+  sessionName: string;
+  startTime: string;
+  endTime?: string;
+  status: LogStatus;
+  notes?: string;
+  executions: ExecutionLog[];
+}

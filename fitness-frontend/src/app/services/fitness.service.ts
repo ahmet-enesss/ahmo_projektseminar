@@ -4,7 +4,8 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
   Exercise, ExerciseRequest,
-  TrainingPlanOverview, TrainingPlanDetail, TrainingPlanRequest
+  TrainingPlanOverview, TrainingPlanDetail, TrainingPlanRequest,
+  ExerciseExecutionTemplate, SessionLog, ExecutionLog
 } from '../models/fitness.models';
 
 @Injectable({
@@ -82,6 +83,76 @@ export class FitnessService {
 
   deleteTrainingSession(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/trainingsessions/${id}`);
+  }
+
+  // --- Exercise-Templates pro Session (Sprint 3) ---
+
+  getExerciseTemplatesForSession(sessionId: number): Observable<ExerciseExecutionTemplate[]> {
+    return this.http
+      .get<ExerciseExecutionTemplate[]>(`${this.baseUrl}/trainingsessions/${sessionId}/exercise-templates`)
+      .pipe(catchError(this.handleError));
+  }
+
+  saveExerciseTemplate(sessionId: number, template: Partial<ExerciseExecutionTemplate>): Observable<ExerciseExecutionTemplate> {
+    if (template.id) {
+      return this.http
+        .put<ExerciseExecutionTemplate>(
+          `${this.baseUrl}/trainingsessions/${sessionId}/exercise-templates/${template.id}`,
+          template
+        )
+        .pipe(catchError(this.handleError));
+    }
+    return this.http
+      .post<ExerciseExecutionTemplate>(
+        `${this.baseUrl}/trainingsessions/${sessionId}/exercise-templates`,
+        template
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteExerciseTemplate(sessionId: number, templateId: number): Observable<void> {
+    return this.http
+      .delete<void>(`${this.baseUrl}/trainingsessions/${sessionId}/exercise-templates/${templateId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // --- Trainingslogs (SessionLog / ExecutionLog) ---
+
+  startTraining(sessionTemplateId: number, notes?: string): Observable<SessionLog> {
+    return this.http
+      .post<SessionLog>(`${this.baseUrl}/sessionlogs/start`, { sessionTemplateId, notes })
+      .pipe(catchError(this.handleError));
+  }
+
+  getSessionLog(id: number): Observable<SessionLog> {
+    return this.http
+      .get<SessionLog>(`${this.baseUrl}/sessionlogs/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateExecutionLog(payload: {
+    executionLogId: number;
+    actualSets: number;
+    actualReps: number;
+    actualWeight: number;
+    completed?: boolean;
+    notes?: string;
+  }): Observable<ExecutionLog> {
+    return this.http
+      .put<ExecutionLog>(`${this.baseUrl}/sessionlogs/execution`, payload)
+      .pipe(catchError(this.handleError));
+  }
+
+  completeTraining(logId: number): Observable<SessionLog> {
+    return this.http
+      .post<SessionLog>(`${this.baseUrl}/sessionlogs/${logId}/complete`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  abortTraining(logId: number): Observable<void> {
+    return this.http
+      .delete<void>(`${this.baseUrl}/sessionlogs/${logId}`)
+      .pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse) {

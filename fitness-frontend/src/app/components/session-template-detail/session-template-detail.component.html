@@ -1,0 +1,104 @@
+<div class="container mt-4">
+  <button class="btn btn-secondary mb-3" (click)="goBack()">Zurück</button>
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h3 class="mb-0">Session-Vorlage bearbeiten</h3>
+    <a class="btn btn-success"
+       [routerLink]="['/training/start', sessionId]">
+      Training auf Basis dieser Vorlage starten
+    </a>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-header fw-bold">
+          {{ editingTemplate ? 'Übung in Vorlage bearbeiten' : 'Übung zur Vorlage hinzufügen' }}
+        </div>
+        <div class="card-body">
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="mb-3">
+              <label class="form-label">Übung</label>
+              <select
+                class="form-select"
+                formControlName="exerciseId"
+                [class.is-invalid]="form.get('exerciseId')?.invalid && (form.get('exerciseId')?.dirty || form.get('exerciseId')?.touched)"
+              >
+                <option [ngValue]="null" disabled>Bitte wählen...</option>
+                <option *ngFor="let ex of availableExercises" [ngValue]="ex.id">
+                  {{ ex.name }} ({{ ex.category }})
+                </option>
+              </select>
+              <div class="invalid-feedback">Bitte eine Übung auswählen.</div>
+            </div>
+
+            <div class="row">
+              <div class="col-4 mb-3">
+                <label class="form-label">Sätze</label>
+                <input type="number" class="form-control" formControlName="plannedSets" min="1" />
+              </div>
+              <div class="col-4 mb-3">
+                <label class="form-label">Wdh.</label>
+                <input type="number" class="form-control" formControlName="plannedReps" min="1" />
+              </div>
+              <div class="col-4 mb-3">
+                <label class="form-label">Gewicht (kg)</label>
+                <input type="number" class="form-control" formControlName="plannedWeight" min="0" step="0.5" />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Reihenfolge</label>
+              <input type="number" class="form-control" formControlName="orderIndex" min="1" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
+              {{ editingTemplate ? 'Änderungen speichern' : 'Zur Session hinzufügen' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <h5>Übungen in dieser Session-Vorlage</h5>
+      <div *ngIf="templates.length === 0" class="alert alert-warning">
+        Noch keine Übungen hinterlegt. Füge auf der linken Seite Übungen mit geplanten Werten hinzu.
+      </div>
+
+      <div class="table-responsive" *ngIf="templates.length > 0">
+        <table class="table table-bordered table-hover align-middle bg-white">
+          <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Übung</th>
+            <th>Geplant</th>
+            <th>Aktionen</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let t of templates">
+            <td>{{ t.orderIndex }}</td>
+            <td>
+              <div class="fw-bold">{{ t.exerciseName }}</div>
+              <div class="text-muted">{{ t.exerciseCategory }}</div>
+            </td>
+            <td>
+              {{ t.plannedSets }} × {{ t.plannedReps }} @ {{ t.plannedWeight }} kg
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(t)">Bearbeiten</button>
+              <button class="btn btn-sm btn-danger" (click)="delete(t)">Entfernen</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+

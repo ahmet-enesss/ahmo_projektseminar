@@ -126,14 +126,18 @@
                 {{ session.status }}
               </button>
             </td>
-            <td>
+            <td class="d-flex gap-2">
+              <a class="btn btn-sm btn-outline-info"
+                 [routerLink]="['/plans', plan.id, 'sessions', session.id]">
+                Vorlage / Übungen
+              </a>
               <button class="btn btn-danger btn-sm" (click)="deleteSession(session)">
                 Entfernen
               </button>
             </td>
           </tr>
           </tbody>
-        </table>
+          </table>
       </div>
     </div>
   </div>
