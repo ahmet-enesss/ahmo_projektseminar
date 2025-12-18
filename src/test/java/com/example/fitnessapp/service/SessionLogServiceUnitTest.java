@@ -246,4 +246,26 @@ class SessionLogServiceUnitTest {
         assertEquals(3, e.getPlannedSets());
         assertEquals(2, e.getActualSets());
     }
+
+    @Test
+    void updateExecution_shouldCoverAllInvalidValueBranches() {
+        ExecutionLog exec = ExecutionLog.builder().id(1L)
+                .sessionLog(SessionLog.builder().status(LogStatus.IN_PROGRESS).build()).build();
+        when(executionLogRepository.findById(1L)).thenReturn(Optional.of(exec));
+
+        ExecutionLogUpdateRequest req = new ExecutionLogUpdateRequest();
+        req.setExecutionLogId(1L);
+
+        // Teste Sets null
+        req.setActualSets(null);
+        assertThrows(ResponseStatusException.class, () -> service.updateExecution(req));
+
+        // Teste Reps <= 0
+        req.setActualSets(3); req.setActualReps(0);
+        assertThrows(ResponseStatusException.class, () -> service.updateExecution(req));
+
+        // Teste Weight null
+        req.setActualReps(10); req.setActualWeight(null);
+        assertThrows(ResponseStatusException.class, () -> service.updateExecution(req));
+    }
 }

@@ -87,4 +87,63 @@ class ExerciseServiceTest {
         when(exerciseRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(ResponseStatusException.class, () -> exerciseService.getExerciseById(99L));
     }
+
+    @Test
+    void shouldCreateExerciseSuccessfully() {
+        when(exerciseRepository.findByName("Bankdrücken")).thenReturn(Optional.empty());
+        when(exerciseRepository.save(any(Exercise1.class))).thenAnswer(i -> i.getArgument(0));
+
+        Exercise1 created = exerciseService.createExercise(validRequest);
+
+        assertNotNull(created);
+        verify(exerciseRepository).save(any());
+    }
+
+    @Test
+    void updateExercise_shouldUpdateWhenValid() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+        when(exerciseRepository.findByNameAndIdNot("Neuer Name", 1L)).thenReturn(Optional.empty());
+        when(exerciseRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ExerciseRequest updateReq = new ExerciseRequest("Neuer Name", "Kraft", Set.of("Beine"), "Desc");
+        Exercise1 updated = exerciseService.updateExercise(1L, updateReq);
+
+        assertEquals("Neuer Name", updated.getName());
+        verify(exerciseRepository).save(any());
+    }
+
+    @Test
+    void updateExercise_shouldThrowConflictWhenNameExists() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+        when(exerciseRepository.findByNameAndIdNot("Existiert", 1L)).thenReturn(Optional.of(new Exercise1()));
+
+        ExerciseRequest updateReq = new ExerciseRequest("Existiert", "Kraft", Set.of("Beine"), "Desc");
+
+        assertThrows(ResponseStatusException.class, () -> exerciseService.updateExercise(1L, updateReq));
+    }
+
+    @Test
+    void deleteExercise_shouldCallDelete() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+
+        exerciseService.deleteExercise(1L);
+
+        verify(exerciseRepository).delete(exercise);
+    }
+
+    @Test
+    void shouldThrowBadRequestExceptionWhenCategoryIsBlank() {
+        validRequest.setCategory(""); // Testet den zweiten Teil der || Bedingung
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestExceptionWhenCategoryIsNull() {
+        validRequest.setCategory(null);
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
 }

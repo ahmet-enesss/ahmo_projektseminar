@@ -262,4 +262,44 @@ class ExerciseExecutionTemplateServiceUnitTest {
         service.delete(4L);
         verify(templateRepository).deleteById(4L);
     }
+
+    @Test
+    void validate_shouldThrowForEveryInvalidBranch() {
+        ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
+        req.setSessionId(2L);
+        req.setExerciseId(3L);
+
+        // Fall 1: Sets <= 0
+        req.setPlannedSets(0); req.setPlannedReps(10); req.setPlannedWeight(5.0); req.setOrderIndex(1);
+        assertThrows(ResponseStatusException.class, () -> service.create(req));
+
+        // Fall 2: Reps <= 0
+        req.setPlannedSets(3); req.setPlannedReps(0);
+        assertThrows(ResponseStatusException.class, () -> service.create(req));
+
+        // Fall 3: Weight < 0
+        req.setPlannedReps(10); req.setPlannedWeight(-0.1);
+        assertThrows(ResponseStatusException.class, () -> service.create(req));
+
+        // Fall 4: OrderIndex <= 0
+        req.setPlannedWeight(5.0); req.setOrderIndex(0);
+        assertThrows(ResponseStatusException.class, () -> service.create(req));
+    }
+
+    @Test
+    void update_shouldNotTriggerOrderConflictWhenOrderIsSame() {
+        // Testet den Branch, bei dem die Order gleich bleibt (!existing.getOrderIndex().equals(request.getOrderIndex()))
+        ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder()
+                .id(1L).orderIndex(5).trainingSession(session).exercise(exercise).build();
+        ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
+        req.setOrderIndex(5); // Gleiche Nummer
+        req.setExerciseId(3L); req.setPlannedSets(3); req.setPlannedReps(10); req.setPlannedWeight(0.0);
+
+        when(templateRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(exerciseRepository.findById(3L)).thenReturn(Optional.of(exercise));
+        when(templateRepository.save(any())).thenReturn(existing);
+
+        assertDoesNotThrow(() -> service.update(1L, req));
+        // Hier wird der existsBy... Check im Service übersprungen -> Branch Abdeckung!
+    }
 }

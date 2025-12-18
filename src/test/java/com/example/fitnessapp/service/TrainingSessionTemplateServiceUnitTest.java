@@ -72,4 +72,56 @@ class TrainingSessionTemplateServiceUnitTest {
 
         assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
+
+    @Test
+    void updateSession_shouldThrowNotFoundWhenIdInvalid() {
+        when(sessionRepository.findById(99L)).thenReturn(Optional.empty());
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("Test");
+        req.setOrderIndex(1);
+
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(99L, req));
+    }
+
+    @Test
+    void createSession_shouldWorkWithoutPlanId() {
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("Freies Training");
+        req.setOrderIndex(1);
+        // planId ist null
+
+        when(sessionRepository.save(any())).thenAnswer(i -> {
+            TrainingSession1 s = i.getArgument(0);
+            s.setId(100L);
+            return s;
+        });
+
+        var resp = service.createSession(req);
+        assertEquals("Freies Training", resp.getName());
+        assertNull(resp.getPlanId());
+    }
+
+    @Test
+    void updateSession_shouldWorkWithoutPlan() {
+        TrainingSession1 session = TrainingSession1.builder().id(1L).name("Old").orderIndex(1).build();
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("New Name");
+        req.setOrderIndex(2);
+        req.setPlanId(null); // Wichtiger Branch: plan == null
+
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+        when(sessionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        var result = service.updateSession(1L, req);
+
+        assertEquals("New Name", result.getName());
+        assertNull(result.getPlanId());
+    }
+
+    @Test
+    void createSession_shouldThrowWhenNameIsNull() {
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName(null); // Testet if (request.getName() == null)
+        assertThrows(ResponseStatusException.class, () -> service.createSession(req));
+    }
 }
