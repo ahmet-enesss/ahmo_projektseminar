@@ -154,4 +154,54 @@ class TrainingSessionTemplateServiceUnitTest {
 
         verify(sessionRepository).delete(session);
     }
+
+    @Test
+    void updateSession_shouldThrowWhenOrderIndexIsNull() {
+        TrainingSession1 session = TrainingSession1.builder().id(1L).build();
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("Valid Name");
+        req.setOrderIndex(null); // Testet: if (request.getOrderIndex() == null)
+
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
+    }
+
+    @Test
+    void updateSession_shouldThrowWhenNameIsNull() {
+        TrainingSession1 session = TrainingSession1.builder().id(1L).build();
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName(null); // Testet: if (request.getName() == null)
+        req.setOrderIndex(5);
+
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
+    }
+
+    @Test
+    void updateSession_shouldThrowWhenOrderIndexTooHigh() {
+        TrainingSession1 session = TrainingSession1.builder().id(1L).build();
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("Test");
+        req.setOrderIndex(31); // Testet: if (request.getOrderIndex() > 30)
+
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
+    }
+
+    @Test
+    void updateSession_shouldThrowWhenPlanNotFound() {
+        TrainingSession1 session = TrainingSession1.builder().id(1L).build();
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+        when(planRepository.findById(99L)).thenReturn(Optional.empty());
+
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("Test");
+        req.setOrderIndex(1);
+        req.setPlanId(99L); // Plan existiert nicht
+
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
+    }
 }
