@@ -302,4 +302,38 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertDoesNotThrow(() -> service.update(1L, req));
         // Hier wird der existsBy... Check im Service übersprungen -> Branch Abdeckung!
     }
+
+    @Test
+    void update_shouldNotCheckDuplicateExerciseIfExerciseRemainsSame() {
+        // Testet den Branch: if (!existing.getExercise().getId().equals(exercise.getId()))
+        Exercise1 sameExercise = Exercise1.builder().id(3L).build();
+        ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder()
+                .id(1L).exercise(sameExercise).trainingSession(session).orderIndex(1).build();
+
+        ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
+        req.setExerciseId(3L); // Gleiche ID wie oben
+        req.setPlannedSets(3); req.setPlannedReps(10); req.setPlannedWeight(10.0); req.setOrderIndex(1);
+
+        when(templateRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(exerciseRepository.findById(3L)).thenReturn(Optional.of(sameExercise));
+        when(templateRepository.save(any())).thenReturn(existing);
+
+        assertDoesNotThrow(() -> service.update(1L, req));
+        // Verify: existsByTrainingSession_IdAndExercise_Id wird NICHT aufgerufen
+        verify(templateRepository, never()).existsByTrainingSession_IdAndExercise_Id(any(), any());
+    }
+
+    @Test
+    void validate_shouldThrowWhenWeightIsNegative() {
+        ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
+        req.setPlannedSets(3); req.setPlannedReps(10);
+        req.setPlannedWeight(-5.0); // Testet: if (plannedWeight < 0)
+        req.setOrderIndex(1);
+
+        // Wir triggern dies über create (da create validate aufruft)
+        when(trainingSessionRepository.findById(any())).thenReturn(Optional.of(session));
+        when(exerciseRepository.findById(any())).thenReturn(Optional.of(exercise));
+
+        assertThrows(ResponseStatusException.class, () -> service.create(req));
+    }
 }

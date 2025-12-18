@@ -124,4 +124,34 @@ class TrainingSessionTemplateServiceUnitTest {
         req.setName(null); // Testet if (request.getName() == null)
         assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
+
+    @Test
+    void createSession_shouldThrowWhenOrderIndexTooLow() {
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("Test");
+        req.setOrderIndex(0); // Testet: if (orderIndex < 1)
+        assertThrows(ResponseStatusException.class, () -> service.createSession(req));
+    }
+
+    @Test
+    void updateSession_shouldThrowWhenNameIsBlank() {
+        TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
+        req.setName("  "); // Testet: if (request.getName().isBlank())
+        req.setOrderIndex(5);
+
+        TrainingSession1 session = TrainingSession1.builder().id(1L).build();
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
+    }
+
+    @Test
+    void deleteSession_shouldCallRepository() {
+        TrainingSession1 session = TrainingSession1.builder().id(1L).build();
+        when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
+
+        service.deleteSession(1L);
+
+        verify(sessionRepository).delete(session);
+    }
 }
