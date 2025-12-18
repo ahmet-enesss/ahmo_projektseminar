@@ -9,40 +9,40 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@RestController // Kennzeichnet die Klasse als REST-Controller (JSON-basierte HTTP-API)
 @RequestMapping("/api/trainingsessions/{sessionId}/exercise-templates")
 public class ExerciseExecutionTemplateController {
 
-    private final ExerciseExecutionTemplateService service;
+    private final ExerciseExecutionTemplateService service; // Service-Schicht, die die Geschäftslogik kapselt
 
     public ExerciseExecutionTemplateController(ExerciseExecutionTemplateService service) {
         this.service = service;
-    }
+    } // Konstruktor-Injection des Services (empfohlen für Testbarkeit)
 
-    @GetMapping
+    @GetMapping  // GET-Endpunkt zum Abrufen aller Exercise-Templates einer Trainingseinheit
     public List<ExerciseExecutionTemplateResponse> list(@PathVariable Long sessionId) {
-        return service.getForSession(sessionId);
+        return service.getForSession(sessionId);  // Delegiert den Abruf an den Service
     }
 
-    @PostMapping
-    public ResponseEntity<ExerciseExecutionTemplateResponse> create(@PathVariable Long sessionId,
-                                                                    @Valid @RequestBody ExerciseExecutionTemplateRequest request) {
-        request.setSessionId(sessionId);
-        return ResponseEntity.ok(service.create(request));
+    @PostMapping // POST-Endpunkt zum Erstellen eines neuen Exercise-Templates
+    public ResponseEntity<ExerciseExecutionTemplateResponse> create(@PathVariable Long sessionId,  // sessionId aus der URL
+                                                                    @Valid @RequestBody ExerciseExecutionTemplateRequest request) { // Request-Body wird validiert (@Valid)
+        request.setSessionId(sessionId); // Setzt die sessionId aus der URL in das Request-Objekt
+        return ResponseEntity.ok(service.create(request));  // Erstellt das Template und gibt HTTP 200 mit Response-Body zurück
     }
 
-    @PutMapping("/{id}")
-    public ExerciseExecutionTemplateResponse update(@PathVariable Long sessionId,
-                                                    @PathVariable Long id,
+    @PutMapping("/{id}") // PUT-Endpunkt zum Aktualisieren eines bestehenden Exercise-Templates
+    public ExerciseExecutionTemplateResponse update(@PathVariable Long sessionId, // ID des zu aktualisierenden Templates
+                                                    @PathVariable Long id, // Validierter Request-Body
                                                     @Valid @RequestBody ExerciseExecutionTemplateRequest request) {
-        request.setSessionId(sessionId);
-        return service.update(id, request);
+        request.setSessionId(sessionId);  // Verknüpft das Update mit der angegebenen Trainingseinheit
+        return service.update(id, request);  // Aktualisiert das Template über den Service
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @DeleteMapping("/{id}")   // DELETE-Endpunkt zum Löschen eines Exercise-Templates
+    public ResponseEntity<Void> delete(@PathVariable Long id) { // Löscht das Template anhand der ID
         service.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build();  // Gibt HTTP 204 No Content zurück (Standard für erfolgreiche Deletes)
     }
 }
 

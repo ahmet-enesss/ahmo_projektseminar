@@ -15,121 +15,122 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class SessionLogService { // Service, der Trainingseinheiten startet, updatet und abschließt
+public class SessionLogService {
 
-    private final SessionLogRepository sessionLogRepository;// Speichert/liest SessionLogs aus der DB
-    private final ExecutionLogRepository executionLogRepository; // Speichert/liest ExecutionLogs (pro Übung) aus der DB
-    private final ExerciseExecutionTemplateRepository templateRepository; // Holt die Übungs-Templates für eine Session-Vorlage
-    private final TrainingSessionRepository1 trainingSessionRepository;  // Holt die Session-Vorlage (Template) aus der DB.
+    private final SessionLogRepository sessionLogRepository;
+    private final ExecutionLogRepository executionLogRepository;
+    private final ExerciseExecutionTemplateRepository templateRepository;
+    private final TrainingSessionRepository1 trainingSessionRepository;
 
-
-    public SessionLogService(SessionLogRepository sessionLogRepository,// Konstruktor: gibt die Abhängigkeiten rein
-                             ExecutionLogRepository executionLogRepository, // Repo für ExecutionLogs
-                             ExerciseExecutionTemplateRepository templateRepository,// Repo für Exercise-Templates
-                             TrainingSessionRepository1 trainingSessionRepository) {// Repo für Session-Vorlagen
-        this.sessionLogRepository = sessionLogRepository;//Speichert das Repo im Feld, damit Methoden es nutzen können
-        this.executionLogRepository = executionLogRepository;// Speichert das Repo im Feld
-        this.templateRepository = templateRepository;// Speichert das Repo im Feld
-        this.trainingSessionRepository = trainingSessionRepository; // Speichert das Repo im Feld
+    public SessionLogService(SessionLogRepository sessionLogRepository, // Konstruktor-Injection der benötigten Repositories
+                             ExecutionLogRepository executionLogRepository,
+                             ExerciseExecutionTemplateRepository templateRepository,
+                             TrainingSessionRepository1 trainingSessionRepository) {
+        this.sessionLogRepository = sessionLogRepository;
+        this.executionLogRepository = executionLogRepository;
+        this.templateRepository = templateRepository;
+        this.trainingSessionRepository = trainingSessionRepository;
     }
 
-    public SessionLogDetailResponse start(SessionLogCreateRequest request) {// Startet ein neues Training (Log)
-        TrainingSession1 templateSession = trainingSessionRepository.findById(request.getSessionTemplateId())// Lädt die Session-Vorlage per ID
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingSession template not found"));// Wenn nicht gefunden: 404
+    public SessionLogDetailResponse start(SessionLogCreateRequest request) { // Startet eine neue Trainingssession basierend auf einem Template
+        TrainingSession1 templateSession = trainingSessionRepository.findById(request.getSessionTemplateId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingSession template not found"));
 
-        List<ExerciseExecutionTemplate> templates =  // Liste der Übungs-Templates die in der Session-Vorlage drin sind
-                templateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(templateSession.getId());// Lädt Übungen sortiert nach Reihenfolge
+        List<ExerciseExecutionTemplate> templates =  // Hole alle Exercise-Templates für diese Session
+                templateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(templateSession.getId());
 
-
-        if (templates.isEmpty()) {// Prüft: hat die Session-Vorlage überhaupt Übungen?
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,// Wenn keine Übungen: Client-Fehler
-                    "TrainingSession template must contain at least one exercise");// Meldung: mindestens eine Übung ist Pflicht
+        if (templates.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "TrainingSession template must contain at least one exercise");
         }
 
-        SessionLog log = SessionLog.builder() // Erstellt ein neues SessionLog-Objekt (Training-Start).
-                .templateSession(templateSession) // Verknüpft: dieses Log gehört zu dieser Session-Vorlage.
-                .status(LogStatus.IN_PROGRESS) // Setzt Status: Training läuft gerade.
-                .startTime(LocalDateTime.now()) // Setzt Startzeit auf „jetzt“.
-                .notes(request.getNotes()) // Speichert Notizen aus dem Request.
-                .build(); // Baut das SessionLog.
+        SessionLog log = SessionLog.builder() // Neues SessionLog erstellen
+                .templateSession(templateSession)
+                .status(LogStatus.IN_PROGRESS)
+                .startTime(LocalDateTime.now())
+                .notes(request.getNotes())
+                .build();
 
-        log = sessionLogRepository.save(log); // Speichert das SessionLog in der DB (dadurch bekommt es z.B. eine ID).
+        log = sessionLogRepository.save(log);
 
-        for (ExerciseExecutionTemplate t : templates) { // Geht jede Übung aus der Vorlage durch.
-            ExecutionLog exec = ExecutionLog.builder() // Baut ein ExecutionLog (Log pro Übung in dieser Session).
-                    .sessionLog(log) // Verknüpft: gehört zu dem SessionLog.
-                    .exerciseTemplate(t) // Verknüpft: basiert auf dem Übungs-Template.
-                    .actualSets(t.getPlannedSets()) // Startwert: actualSets = plannedSets (kann später geändert werden).
-                    .actualReps(t.getPlannedReps()) // Startwert: actualReps = plannedReps (kann später geändert werden).
-                    .actualWeight(t.getPlannedWeight()) // Startwert: actualWeight = plannedWeight (kann später geändert werden).
-                    .completed(false) // Anfangs ist die Übung noch nicht als „fertig“ markiert.
-                    .notes(null) // Anfangs sind keine Notizen zur Übung gesetzt.
-                    .build(); // Baut das ExecutionLog.
-            executionLogRepository.save(exec); // Speichert das ExecutionLog in der DB.
+        for (ExerciseExecutionTemplate t : templates) {
+            // Für jede Übung im Template einen ExecutionLog anlegen
+            ExecutionLog exec = ExecutionLog.builder()
+                    .sessionLog(log)
+                    .exerciseTemplate(t)
+                    .actualSets(t.getPlannedSets())
+                    .actualReps(t.getPlannedReps())
+                    .actualWeight(t.getPlannedWeight())
+                    .completed(false)
+                    .notes(null)
+                    .build();
+            executionLogRepository.save(exec);
         }
+
         // Nach dem Anlegen der Exercise-Logs erneut laden, damit die Beziehung gefüllt ist
-        SessionLog reloaded = sessionLogRepository.findById(log.getId())// Lädt das SessionLog nochmal (inkl. Beziehungen).
+        SessionLog reloaded = sessionLogRepository.findById(log.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Created log not found"));
 
-        return toDetail(reloaded);// Wandelt das SessionLog in ein Detail-Response-DTO um und gibt es zurück
+        return toDetail(reloaded);
     }
 
-    public SessionLogDetailResponse getDetail(Long id) {// Gibt ein vollständiges Detail-DTO für ein SessionLog zurück.
-        SessionLog log = sessionLogRepository.findById(id) // Sucht das SessionLog in der DB
+    public SessionLogDetailResponse getDetail(Long id) {  // Liefert Details eines SessionLogs inklusive aller ExecutionLogs
+        SessionLog log = sessionLogRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SessionLog not found"));
-        return toDetail(log); // Konvertiert Entity zu Detail-DTO und gibt es zurück.
+        return toDetail(log);
     }
 
-    public ExecutionLogResponse updateExecution(ExecutionLogUpdateRequest request) {// Aktualisiert die echten Werte einer Übung während des Trainings
-        ExecutionLog exec = executionLogRepository.findById(request.getExecutionLogId())// Lädt das ExecutionLog per ID.
+    public ExecutionLogResponse updateExecution(ExecutionLogUpdateRequest request) {  // Aktualisiert einen ExecutionLog während der Session
+        ExecutionLog exec = executionLogRepository.findById(request.getExecutionLogId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ExecutionLog not found"));
 
-        SessionLog log = exec.getSessionLog();// Holt das SessionLog, zu dem dieses ExecutionLog gehört.
-        if (log.getStatus() != LogStatus.IN_PROGRESS) {// Prüft: darf man noch ändern?
+        SessionLog log = exec.getSessionLog();
+        if (log.getStatus() != LogStatus.IN_PROGRESS) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Changes only allowed while training is IN_PROGRESS");
         }
 
-        if (request.getActualSets() == null || request.getActualSets() <= 0 ||//Prüft: Sets müssen vorhanden und > 0 sein.
-                request.getActualReps() == null || request.getActualReps() <= 0 ||// Prüft: Reps müssen vorhanden und > 0 sein.
-                request.getActualWeight() == null || request.getActualWeight() < 0) {// Prüft: Gewicht muss vorhanden und >= 0 sein.
+        if (request.getActualSets() == null || request.getActualSets() <= 0 ||    // Validierung der tatsächlichen Werte
+                request.getActualReps() == null || request.getActualReps() <= 0 ||
+                request.getActualWeight() == null || request.getActualWeight() < 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid actual values");
         }
-        exec.setActualSets(request.getActualSets()); // Speichert die neuen Sets.
-        exec.setActualReps(request.getActualReps()); // Speichert die neuen Reps.
-        exec.setActualWeight(request.getActualWeight()); // Speichert das neue Gewicht.
-        exec.setCompleted(request.getCompleted() != null ? request.getCompleted() : exec.getCompleted()); // Setzt completed nur, wenn im Request gesetzt; sonst bleibt alter Wert.
-        exec.setNotes(request.getNotes()); // Setzt Notizen (kann auch null sein und überschreibt dann).
 
-        return toExecutionResponse(executionLogRepository.save(exec)); // Speichert die Änderungen und gibt das Response-DTO zurück.
+        exec.setActualSets(request.getActualSets());        // Werte aktualisieren
+        exec.setActualReps(request.getActualReps());
+        exec.setActualWeight(request.getActualWeight());
+        exec.setCompleted(request.getCompleted() != null ? request.getCompleted() : exec.getCompleted());
+        exec.setNotes(request.getNotes());
+
+        return toExecutionResponse(executionLogRepository.save(exec));
     }
 
-    public SessionLogSummaryResponse complete(Long logId) {// Markiert ein Training als abgeschlossen
-        SessionLog log = sessionLogRepository.findById(logId)// Lädt das SessionLog.
+    public SessionLogSummaryResponse complete(Long logId) { // Markiert ein SessionLog als abgeschlossen
+        SessionLog log = sessionLogRepository.findById(logId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SessionLog not found"));
 
-        if (log.getStatus() != LogStatus.IN_PROGRESS) {// Prüft: nur laufende Trainings darf man abschließen.
+        if (log.getStatus() != LogStatus.IN_PROGRESS) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only IN_PROGRESS logs can be completed");
         }
 
-        log.setStatus(LogStatus.COMPLETED);// Setzt Status auf COMPLETED.
-        log.setEndTime(LocalDateTime.now());//Setzt Endzeit auf „jetzt“.
+        log.setStatus(LogStatus.COMPLETED);
+        log.setEndTime(LocalDateTime.now());
 
-        return toSummary(sessionLogRepository.save(log));// Speichert das Log und gibt eine Summary-Antwort zurück.
+        return toSummary(sessionLogRepository.save(log));
     }
 
-    public void abort(Long logId) {// Bricht ein laufendes Training ab und löscht das Log.
-        SessionLog log = sessionLogRepository.findById(logId) // Lädt das SessionLog.
+    public void abort(Long logId) {  // Bricht eine Session ab (löscht SessionLog)
+        SessionLog log = sessionLogRepository.findById(logId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SessionLog not found"));
 
-        if (log.getStatus() != LogStatus.IN_PROGRESS) {// Prüft: nur laufende Trainings darf man löschen/abbrechen.
+        if (log.getStatus() != LogStatus.IN_PROGRESS) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only IN_PROGRESS logs can be deleted");
         }
 
-        sessionLogRepository.delete(log);// Löscht das SessionLog (und ggf. abhängige Logs, je nach DB-Relation).
+        sessionLogRepository.delete(log);
     }
 
-    private SessionLogSummaryResponse toSummary(SessionLog log) {
+    private SessionLogSummaryResponse toSummary(SessionLog log) { //Wandelt ein SessionLog in ein Summary-DTO um
         return SessionLogSummaryResponse.builder()
                 .id(log.getId())
                 .sessionTemplateId(log.getTemplateSession().getId())
@@ -140,7 +141,7 @@ public class SessionLogService { // Service, der Trainingseinheiten startet, upd
                 .build();
     }
 
-    private SessionLogDetailResponse toDetail(SessionLog log) {// Hilfsmethode: macht aus SessionLog ein Summary-DTO.
+    private SessionLogDetailResponse toDetail(SessionLog log) { //Wandelt ein SessionLog in ein Detail-DTO um (inklusive ExecutionLogs)
         List<ExecutionLogResponse> executions = log.getExerciseLogs()
                 .stream()
                 .map(this::toExecutionResponse)
@@ -158,20 +159,20 @@ public class SessionLogService { // Service, der Trainingseinheiten startet, upd
                 .build();
     }
 
-    private ExecutionLogResponse toExecutionResponse(ExecutionLog exec) { // Hilfsmethode: macht aus ExecutionLog ein Response-DTO.
-        return ExecutionLogResponse.builder() // Startet Builder fürs Execution-DTO.
-                .id(exec.getId()) // Setzt ExecutionLog-ID.
-                .exerciseTemplateId(exec.getExerciseTemplate().getId()) // Setzt ID des Übungs-Templates.
-                .exerciseName(exec.getExerciseTemplate().getExercise().getName()) // Setzt Übungsname (aus verknüpfter Übung).
-                .plannedSets(exec.getExerciseTemplate().getPlannedSets()) // Setzt geplante Sets (aus Template).
-                .plannedReps(exec.getExerciseTemplate().getPlannedReps()) // Setzt geplante Reps (aus Template).
-                .plannedWeight(exec.getExerciseTemplate().getPlannedWeight()) // Setzt geplantes Gewicht (aus Template).
-                .actualSets(exec.getActualSets()) // Setzt echte Sets (aus Log).
-                .actualReps(exec.getActualReps()) // Setzt echte Reps (aus Log).
-                .actualWeight(exec.getActualWeight()) // Setzt echtes Gewicht (aus Log).
-                .completed(exec.getCompleted()) // Setzt, ob Übung abgeschlossen ist.
-                .notes(exec.getNotes()) // Setzt Notizen zur Übung.
-                .build(); // Baut das DTO.
+    private ExecutionLogResponse toExecutionResponse(ExecutionLog exec) { //Wandelt einen ExecutionLog in ein Response-DTO um
+        return ExecutionLogResponse.builder()
+                .id(exec.getId())
+                .exerciseTemplateId(exec.getExerciseTemplate().getId())
+                .exerciseName(exec.getExerciseTemplate().getExercise().getName())
+                .plannedSets(exec.getExerciseTemplate().getPlannedSets())
+                .plannedReps(exec.getExerciseTemplate().getPlannedReps())
+                .plannedWeight(exec.getExerciseTemplate().getPlannedWeight())
+                .actualSets(exec.getActualSets())
+                .actualReps(exec.getActualReps())
+                .actualWeight(exec.getActualWeight())
+                .completed(exec.getCompleted())
+                .notes(exec.getNotes())
+                .build();
     }
 }
 

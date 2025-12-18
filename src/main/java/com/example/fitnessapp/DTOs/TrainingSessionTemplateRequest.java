@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 
-public class TrainingSessionTemplateRequest {
+public class TrainingSessionTemplateRequest { // Request-DTO zum Erstellen oder Aktualisieren einer Trainingssession-Vorlage
 
     //ID des Trainingsplanes (optional, kann null sein)
     private Long planId;
