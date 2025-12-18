@@ -1,6 +1,5 @@
 package com.example.fitnessapp.Service;
 
-
 import com.example.fitnessapp.DTOs.ExerciseRequest;
 import com.example.fitnessapp.Model.Exercise1;
 import com.example.fitnessapp.Repository.ExerciseRepository1;
@@ -12,28 +11,23 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
-@Service // Markiert die Klasse als Service-Komponente
+@Service
 public class ExerciseService1 {
 
-    @Autowired   // Spring injiziert automatisch das passende Repository
+    @Autowired
     private ExerciseRepository1 exerciseRepository;
-    // Gibt alle Übungen aus der Datenbank zurück
+
     public List<Exercise1> getAllExercises() {
         return exerciseRepository.findAll();
     }
-    // Holt eine Übung anhand ihrer ID aus der Datenbank
-    // Wenn keine Übung mit dieser ID existiert, wird ein 404-Fehler (NOT_FOUND) ausgelöst
+
     public Exercise1 getExerciseById(Long id) {
         return exerciseRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
     }
 
-
-
-    @Transactional  // Stellt sicher, dass alle Datenbankoperationen in einer Transaktion ausgeführt werden
+    @Transactional
     public Exercise1 createExercise(ExerciseRequest request) {
-        // Prüft, ob bereits eine Übung mit diesem Namen existiert
         if (exerciseRepository.findByName(request.getName()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise with this name already exists");
         }
@@ -44,7 +38,7 @@ public class ExerciseService1 {
                 .muscleGroups(request.getMuscleGroups())
                 .description(request.getDescription())
                 .build();
-        return exerciseRepository.save(exercise);  // Speichert die neue Übung in der Datenbank und gibt das gespeicherte Objekt zurück
+        return exerciseRepository.save(exercise);
     }
 
     @Transactional
