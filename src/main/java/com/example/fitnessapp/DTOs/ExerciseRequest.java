@@ -19,7 +19,12 @@ public class ExerciseRequest {
     private Set<@NotBlank(message = "Einträge in Muskelgruppen dürfen nicht leer sein") String> muscleGroups;
 
     private String description;
-}
 
+    public ExerciseRequest(String pushUp, String strength, Set<String> chest, String classicBodyweightExercise) {
+    }
+
+
+
+}
 
 
