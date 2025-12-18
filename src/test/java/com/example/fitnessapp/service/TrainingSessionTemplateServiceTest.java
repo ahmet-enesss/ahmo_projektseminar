@@ -1,4 +1,4 @@
 package com.example.fitnessapp.service;
 
-public class TrainingSessionTemplateServiceTest {
-}
+// Datei entfernt: Inhaltsloser Platzhalter wurde bereinigt.
+// Ursprünglich Testplatzhalter - Testfälle werden in den UnitTest-Klassen implementiert.

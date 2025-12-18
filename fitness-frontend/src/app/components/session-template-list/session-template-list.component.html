@@ -27,7 +27,7 @@
           </div>
 
           <div class="col-md-4 mb-3">
-            <label class="form-label">Trainingsplan (optional)</label>
+            <label class="form-label">Trainingsplan</label>
             <select class="form-select" formControlName="planId">
               <option [value]="null">Kein Plan</option>
               <option *ngFor="let plan of plans" [value]="plan.id">{{ plan.name }}</option>

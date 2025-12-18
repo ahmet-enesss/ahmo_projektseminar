@@ -90,6 +90,7 @@ export class SessionTemplateDetailComponent implements OnInit {
       plannedWeight: 0,
       orderIndex: this.templates.length + 1
     });
+    this.clearServerErrors();
   }
 
   edit(template: ExerciseExecutionTemplate) {
@@ -101,9 +102,29 @@ export class SessionTemplateDetailComponent implements OnInit {
       plannedWeight: template.plannedWeight,
       orderIndex: template.orderIndex
     });
+    this.clearServerErrors();
+  }
+
+  private clearServerErrors() {
+    Object.keys(this.form.controls).forEach(key => {
+      const control = this.form.get(key);
+      if (control && control.errors && control.errors['server']) {
+        const errors = { ...control.errors };
+        delete errors['server'];
+        if (Object.keys(errors).length === 0) {
+          control.setErrors(null);
+        } else {
+          control.setErrors(errors);
+        }
+      }
+    });
+    this.errorMessage = '';
   }
 
   save() {
+    // Clear previous server errors
+    this.clearServerErrors();
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -129,7 +150,28 @@ export class SessionTemplateDetailComponent implements OnInit {
         setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        this.errorMessage = err.message;
+        // Map backend validation errors to form controls
+        try {
+          if (err?.status === 400 && err?.error?.type === 'validation') {
+            const fieldErrors = err.error.errors as { [key: string]: string };
+            Object.entries(fieldErrors).forEach(([field, msg]) => {
+              const control = this.form.get(field);
+              if (control) {
+                const prev = control.errors ? { ...control.errors } : {};
+                prev['server'] = msg;
+                control.setErrors(prev);
+              }
+            });
+            this.errorMessage = 'Bitte überprüfe die markierten Felder.';
+          } else if (err?.error?.type === 'business') {
+            this.errorMessage = err.error.message || 'Geschäftsregelverletzung';
+          } else {
+            this.errorMessage = err.message || 'Unerwarteter Fehler';
+          }
+        } catch (e) {
+          this.errorMessage = err?.message || 'Unerwarteter Fehler';
+        }
+
         this.cdr.detectChanges();
       }
     });
@@ -155,5 +197,3 @@ export class SessionTemplateDetailComponent implements OnInit {
     this.location.back();
   }
 }
-
-

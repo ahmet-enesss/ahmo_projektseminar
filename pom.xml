@@ -137,14 +137,14 @@
                                     <!-- Prüfe nur Service-Klassen -->
                                     <element>PACKAGE</element>
                                     <includes>
-                                        <include>FitnessTracker.service.*</include>
+                                        <include>com.example.fitnessapp.Service.*</include>
                                     </includes>
 
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.80</minimum>
+                                            <minimum>0.85</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
@@ -181,10 +181,6 @@
                         </exclude>
                     </excludes>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
             <!-- JaCoCo1 Maven Plugin for Code Coverage -->

@@ -20,11 +20,12 @@ public class ExerciseRequest {
 
     private String description;
 
-    public ExerciseRequest(String pushUp, String strength, Set<String> chest, String classicBodyweightExercise) {
+    public ExerciseRequest(String name, String category, Set<String> muscleGroups, String description) {
+        this.name = name;
+        this.category = category;
+        this.muscleGroups = muscleGroups;
+        this.description = description;
     }
 
-
-
 }
-
 

@@ -45,21 +45,54 @@
             <div class="row">
               <div class="col-4 mb-3">
                 <label class="form-label">Sätze</label>
-                <input type="number" class="form-control" formControlName="plannedSets" min="1" />
+                <input type="number"
+                       class="form-control"
+                       formControlName="plannedSets"
+                       min="1"
+                       [class.is-invalid]="form.get('plannedSets')?.invalid && (form.get('plannedSets')?.dirty || form.get('plannedSets')?.touched)" />
+                <div class="invalid-feedback" *ngIf="form.get('plannedSets')?.errors">
+                  <span *ngIf="form.get('plannedSets')?.errors?.['required']">Anzahl der Sätze ist erforderlich.</span>
+                  <span *ngIf="form.get('plannedSets')?.errors?.['min']">Anzahl der Sätze muss größer als 0 sein.</span>
+                </div>
               </div>
               <div class="col-4 mb-3">
                 <label class="form-label">Wdh.</label>
-                <input type="number" class="form-control" formControlName="plannedReps" min="1" />
+                <input type="number"
+                       class="form-control"
+                       formControlName="plannedReps"
+                       min="1"
+                       [class.is-invalid]="form.get('plannedReps')?.invalid && (form.get('plannedReps')?.dirty || form.get('plannedReps')?.touched)" />
+                <div class="invalid-feedback" *ngIf="form.get('plannedReps')?.errors">
+                  <span *ngIf="form.get('plannedReps')?.errors?.['required']">Anzahl der Wiederholungen ist erforderlich.</span>
+                  <span *ngIf="form.get('plannedReps')?.errors?.['min']">Anzahl der Wiederholungen muss größer als 0 sein.</span>
+                </div>
               </div>
               <div class="col-4 mb-3">
                 <label class="form-label">Gewicht (kg)</label>
-                <input type="number" class="form-control" formControlName="plannedWeight" min="0" step="0.5" />
+                <input type="number"
+                       class="form-control"
+                       formControlName="plannedWeight"
+                       min="0"
+                       step="0.5"
+                       [class.is-invalid]="form.get('plannedWeight')?.invalid && (form.get('plannedWeight')?.dirty || form.get('plannedWeight')?.touched)" />
+                <div class="invalid-feedback" *ngIf="form.get('plannedWeight')?.errors">
+                  <span *ngIf="form.get('plannedWeight')?.errors?.['required']">Gewicht ist erforderlich.</span>
+                  <span *ngIf="form.get('plannedWeight')?.errors?.['min']">Gewicht darf nicht negativ sein.</span>
+                </div>
               </div>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Reihenfolge</label>
-              <input type="number" class="form-control" formControlName="orderIndex" min="1" />
+              <input type="number"
+                     class="form-control"
+                     formControlName="orderIndex"
+                     min="1"
+                     [class.is-invalid]="form.get('orderIndex')?.invalid && (form.get('orderIndex')?.dirty || form.get('orderIndex')?.touched)" />
+              <div class="invalid-feedback" *ngIf="form.get('orderIndex')?.errors">
+                <span *ngIf="form.get('orderIndex')?.errors?.['required']">Reihenfolge ist erforderlich.</span>
+                <span *ngIf="form.get('orderIndex')?.errors?.['min']">Reihenfolge muss mindestens 1 sein.</span>
+              </div>
             </div>
 
             <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
@@ -94,7 +127,7 @@
               <div class="text-muted">{{ t.exerciseCategory }}</div>
             </td>
             <td>
-              {{ t.plannedSets }} × {{ t.plannedReps }} @ {{ t.plannedWeight }} kg
+              {{ t.plannedSets }} × {{ t.plannedReps }} x {{ t.plannedWeight }} kg
             </td>
             <td>
               <button class="btn btn-sm btn-outline-primary me-2" (click)="edit(t)">Bearbeiten</button>
@@ -107,5 +140,4 @@
     </div>
   </div>
 </div>
-
 

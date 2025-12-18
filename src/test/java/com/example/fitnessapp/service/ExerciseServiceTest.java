@@ -87,7 +87,6 @@ class ExerciseServiceTest {
 
     // ---------- createExercise ----------
 
-
     @Test
     void shouldThrowBadRequestWhenNameIsMissing() {
         validRequest.setName("");
@@ -100,9 +99,220 @@ class ExerciseServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
+    @Test
+    void shouldThrowBadRequestWhenCategoryIsMissing() {
+        validRequest.setCategory("");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenMuscleGroupsMissing() {
+        validRequest.setMuscleGroups(Set.of());
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenNameIsNull() {
+        validRequest.setName(null);
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenCategoryIsNull() {
+        validRequest.setCategory(null);
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenMuscleGroupsIsNull() {
+        validRequest.setMuscleGroups(null);
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenNameIsBlank() {
+        validRequest.setName("   ");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenCategoryIsBlank() {
+        validRequest.setName("Valid");
+        validRequest.setCategory("   ");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenNameAndCategoryNull() {
+        validRequest.setName(null);
+        validRequest.setCategory(null);
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldCreateExerciseWhenValid() {
+        when(exerciseRepository.findByName("Push Up")).thenReturn(Optional.empty());
+        when(exerciseRepository.save(any(Exercise1.class))).thenAnswer(invocation -> {
+            Exercise1 arg = invocation.getArgument(0);
+            arg.setId(2L);
+            return arg;
+        });
+
+        Exercise1 created = exerciseService.createExercise(validRequest);
+
+        assertNotNull(created);
+        assertEquals(2L, created.getId());
+        assertEquals("Push Up", created.getName());
+        verify(exerciseRepository).findByName("Push Up");
+        verify(exerciseRepository).save(any(Exercise1.class));
+    }
+
+    @Test
+    void shouldThrowConflictWhenCreatingWithExistingName() {
+        when(exerciseRepository.findByName("Push Up")).thenReturn(Optional.of(exercise));
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.createExercise(validRequest)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+    }
+
     // ---------- updateExercise ----------
 
-//helo
+    @Test
+    void shouldUpdateExerciseWhenValid() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+        when(exerciseRepository.findByNameAndIdNot("Push Up Updated", 1L)).thenReturn(Optional.empty());
+        when(exerciseRepository.save(any(Exercise1.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ExerciseRequest updateRequest = new ExerciseRequest("Push Up Updated", "Strength", Set.of("Chest"), "Updated");
+
+        Exercise1 updated = exerciseService.updateExercise(1L, updateRequest);
+
+        assertEquals("Push Up Updated", updated.getName());
+        assertEquals("Updated", updated.getDescription());
+        verify(exerciseRepository).findById(1L);
+        verify(exerciseRepository).findByNameAndIdNot("Push Up Updated", 1L);
+        verify(exerciseRepository).save(any(Exercise1.class));
+    }
+
+    @Test
+    void shouldThrowConflictWhenUpdatingToExistingName() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+        Exercise1 other = Exercise1.builder().id(2L).name("Push Up Updated").build();
+        when(exerciseRepository.findByNameAndIdNot("Push Up Updated", 1L)).thenReturn(Optional.of(other));
+
+        ExerciseRequest updateRequest = new ExerciseRequest("Push Up Updated", "Strength", Set.of("Chest"), "Updated");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.updateExercise(1L, updateRequest)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenUpdatingNonExisting() {
+        when(exerciseRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ExerciseRequest updateRequest = new ExerciseRequest("X", "Y", Set.of("A"), "D");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.updateExercise(99L, updateRequest)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenUpdateRequestHasNullNameOrCategory() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+
+        ExerciseRequest updateRequest = new ExerciseRequest(null, "Strength", Set.of("Chest"), "Updated");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.updateExercise(1L, updateRequest)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void update_shouldThrowWhenCategoryBlank() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+
+        ExerciseRequest updateRequest = new ExerciseRequest("Name", "   ", Set.of("A"), "D");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.updateExercise(1L, updateRequest)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void update_shouldThrowWhenMuscleGroupsEmpty() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+
+        ExerciseRequest updateRequest = new ExerciseRequest("Name", "Cat", Set.of(), "D");
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.updateExercise(1L, updateRequest)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
 
     // ---------- deleteExercise ----------
 
@@ -113,5 +323,17 @@ class ExerciseServiceTest {
         exerciseService.deleteExercise(1L);
 
         verify(exerciseRepository).delete(exercise);
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenDeletingNonExisting() {
+        when(exerciseRepository.findById(99L)).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> exerciseService.deleteExercise(99L)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 }

@@ -1,5 +1,3 @@
 package com.example.fitnessapp.service;
 
-public class TrainingPlanServiceTest {
-    //hello
-}
+// Datei entfernt: Platzhalter-Buildreste bereinigt.

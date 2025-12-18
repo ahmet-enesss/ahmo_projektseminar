@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 @Service // Markiert die Klasse als Service-Komponente
 public class ExerciseService1 {
 

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 @RestController //markiert diese Klasse als Rest-Controller
 @RequestMapping("/api/trainingplans")// Basis-URL für alle Trainingsplänerouten
 public class TrainingPlanController1 {

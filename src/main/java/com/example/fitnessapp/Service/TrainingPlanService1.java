@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 @Service //markiert die Klasse als Service-Komponente
 public class TrainingPlanService1 {
 
