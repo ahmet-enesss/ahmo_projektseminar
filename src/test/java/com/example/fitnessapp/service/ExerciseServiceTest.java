@@ -33,7 +33,7 @@ class ExerciseServiceTest {
     private ExerciseRequest validRequest;
     private Exercise1 exercise;
 
-    // Gültige Standard-Request, die in mehreren Tests wiederverwendet wird.
+    //Gültige Standard-Request die in mehreren Tests wiederverwendet wird
     @BeforeEach
     void setUp() {
         validRequest = new ExerciseRequest("Bankdrücken", "Kraft", Set.of("Brust"), "Desc");
@@ -41,8 +41,7 @@ class ExerciseServiceTest {
         exercise = Exercise1.builder().id(1L).name("Bankdrücken").build();
     }
 
-    // Testfall:
-    // Eine Übung mit gültigen Daten wird erstellt
+    // Test: Eine Übung mit gültigen Daten wird erstellt
     // --> Es existiert noch keine Übung mit diesem Namen
     @Test
     void shouldCreateExerciseSuccessfullyWhenRequestIsValid() {
@@ -56,8 +55,7 @@ class ExerciseServiceTest {
         verify(exerciseRepository).save(any());
     }
 
-    // Testfall:
-    // Eine Übung mit dem gleichen Namen existiert bereits
+    // Test:Eine Übung mit dem gleichen Namen existiert bereits
     // --> Der Service muss einen CONFLICT zurückgeben
     @Test
     void shouldThrowConflictExceptionWhenExerciseNameAlreadyExists() {
@@ -69,8 +67,7 @@ class ExerciseServiceTest {
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
     }
 
-    // Testfall:
-    // Der Name besteht nur aus Leerzeichen
+    // Test:Der Name besteht nur aus Leerzeichen
     // -->Testet die isBlank()-Validierung
     @Test
     void shouldThrowBadRequestExceptionWhenNameIsBlank() {
@@ -80,8 +77,7 @@ class ExerciseServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
-    // Testfall:
-    // Die Menge der Muskelgruppen ist leer
+    // Test:Die Menge der Muskelgruppen ist leer
     // --> Eine Übung ohne Muskelgruppen ist nicht erlaubt
     @Test
     void shouldThrowBadRequestExceptionWhenMuscleGroupsAreMissing() {
@@ -91,8 +87,7 @@ class ExerciseServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
-    // Testfall:
-    // Eine Übung wird erfolgreich per ID gefunden
+    // Test:Eine Übung wird erfolgreich per ID gefunden
     @Test
     void shouldReturnExerciseWhenIdExists() {
         when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
@@ -100,8 +95,7 @@ class ExerciseServiceTest {
         assertEquals("Bankdrücken", result.getName());
     }
 
-    // Testfall:
-    // Die angefragte Übung existiert nicht
+    // Test:Die angefragte Übung existiert nicht
     // --> Der Service muss NOT_FOUND werfen
     @Test
     void shouldThrowNotFoundExceptionWhenExerciseDoesNotExist() {
@@ -109,7 +103,7 @@ class ExerciseServiceTest {
         assertThrows(ResponseStatusException.class, () -> exerciseService.getExerciseById(99L));
     }
 
-    // Testfall(Happy Path):
+    // Test(Happy Path):
     @Test
     void shouldCreateExerciseSuccessfully() {
         when(exerciseRepository.findByName("Bankdrücken")).thenReturn(Optional.empty());
@@ -119,8 +113,7 @@ class ExerciseServiceTest {
         verify(exerciseRepository).save(any());
     }
 
-    // Testfall:
-    // Eine bestehende Übung wird erfolgreich aktualisiert
+    // Test:Eine bestehende Übung wird erfolgreich aktualisiert
     // Kein Namenskonflikt mit anderen Übungen
     @Test
     void updateExercise_shouldUpdateWhenValid() {
@@ -134,8 +127,7 @@ class ExerciseServiceTest {
         assertEquals("Neuer Name", updated.getName());
         verify(exerciseRepository).save(any());
     }
-    // Testfall:
-    // Beim Update existiert bereits eine andere Übung mit gleichem Namen
+    // Test:Beim Update existiert bereits eine andere Übung mit gleichem Namen
     // --> Der Service muss einen CONFLICT werfen
     @Test
     void updateExercise_shouldThrowConflictWhenNameExists() {
@@ -147,8 +139,7 @@ class ExerciseServiceTest {
         assertThrows(ResponseStatusException.class, () -> exerciseService.updateExercise(1L, updateReq));
     }
 
-    // Testfall:
-    // Eine Übung wird gelöscht
+    // Test: Eine Übung wird gelöscht
     // Der Service delegiert korrekt an das Repository
     @Test
     void deleteExercise_shouldCallDelete() {
@@ -157,8 +148,7 @@ class ExerciseServiceTest {
         verify(exerciseRepository).delete(exercise);
     }
 
-    // Testfall:
-    // Die Kategorie ist leer
+    // Testfall:Die Kategorie ist leer
     // Testet den zweiten Teil der (null || blank)-Bedingung
     @Test
     void shouldThrowBadRequestExceptionWhenCategoryIsBlank() {
@@ -168,8 +158,7 @@ class ExerciseServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
-    // Testfall:
-    // Die Kategorie ist null
+    // Test:Die Kategorie ist null
     // Testet den ersten Teil der (null || blank)-Bedingung
     @Test
     void shouldThrowBadRequestExceptionWhenCategoryIsNull() {

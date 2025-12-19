@@ -52,8 +52,7 @@ class TrainingPlanServiceUnitTest {
                 .build();
     }
 
-    // Testfall:
-    // Es existiert ein Trainingsplan
+    // Test:Es existiert ein Trainingsplan
     // --> Der Service soll eine Übersicht zurückgeben inkl. Anzahl Sessions
     @Test
     void getAllTrainingPlans_returnsOverview() {
@@ -65,9 +64,8 @@ class TrainingPlanServiceUnitTest {
         // Die Anzahl der Sessions wird korrekt gemappt
         assertEquals(2L, list.get(0).getSessionCount());
     }
-    // Testfall:
-    // Trainingsplan mit dieser ID existiert nicht
-    // --> Der Service muss eine Exception werfen (404)
+    // Test: Trainingsplan mit dieser ID existiert nicht
+    // --> Der Service muss eine Exception werfen (Fehler)
     @Test
     void getTrainingPlanById_whenNotFound_throws() {
         when(planRepository.findById(5L)).thenReturn(Optional.empty());
@@ -78,8 +76,7 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("TrainingPlan not found"));
     }
 
-    // Testfall:
-    // Trainingsplan existiert hat aber noch KEINE Sessions
+    // Test:Trainingsplan existiert hat aber noch KEINE Sessions
     // Der Service soll:
     //  --> hasSessions = false setzen
     //  --> einen Hinweistext zurückgeben
@@ -93,9 +90,8 @@ class TrainingPlanServiceUnitTest {
         assertTrue(resp.getSessionsHint().contains("Noch keine"));
     }
 
-    // Testfall:
-    // Trainingsplan besitzt mindestens eine Session.
-    // Zusätzlich werden die Übungstemplates pro Session gezählt.
+    // Test:Trainingsplan besitzt mindestens eine Session
+    // Zusätzlich werden die Übungstemplates pro Session gezählt
     @Test
     void getTrainingPlanById_withSessions_returnsHasSessionsTrueAndSummaries() {
         TrainingSession1 s = TrainingSession1.builder()
@@ -116,8 +112,7 @@ class TrainingPlanServiceUnitTest {
         assertEquals(1, resp.getSessions().get(0).getExerciseCount());
     }
 
-    // Testfall:
-    // Ein Trainingsplan mit gleichem Namen existiert bereits
+    // Test:Ein Trainingsplan mit gleichem Namen existiert bereits
     // --> Der Service muss einen Conflict-Fehler werfen
     @Test
     void create_whenNameExists_throwsConflict() {
@@ -129,8 +124,8 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("already exists"));
     }
 
-    // Testfall (Happy Path):
-    // Kein Plan mit diesem Namen existiert → Speichern erlaubt
+    // Test(Happy Path): Kein Plan mit diesem Namen existiert
+    // --> Speichern erlaubt
     @Test
     void create_whenValid_saves() {
         when(planRepository.findByName("Plan")).thenReturn(Optional.empty());
@@ -142,8 +137,8 @@ class TrainingPlanServiceUnitTest {
         verify(planRepository).save(plan);
     }
 
-    // Testfall:
-    // Trainingsplan mit ID existiert nicht → Exception
+    // Test:Trainingsplan mit ID existiert nicht
+    // --> Exception
     @Test
     void update_whenNotFound_throws() {
         when(planRepository.findById(9L)).thenReturn(Optional.empty());
@@ -154,8 +149,7 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("TrainingPlan not found"));
     }
 
-    // Testfall:
-    // Neuer Name kollidiert mit einem anderen existierenden Trainingsplan
+    // Test:Neuer Name kollidiert mit einem anderen existierenden Trainingsplan
     @Test
     void update_whenNameConflict_throwsConflict() {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
@@ -173,8 +167,8 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("already exists"));
     }
 
-    // Testfall (Happy Path):
-    // Trainingsplan existiert Name ist eindeutig → Update erlaubt
+    // Test (Happy Path):Trainingsplan existiert Name ist eindeutig
+    // --> Update erlaubt
     @Test
     void update_whenValid_saves() {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
@@ -190,8 +184,7 @@ class TrainingPlanServiceUnitTest {
         verify(planRepository).save(any());
     }
 
-    // Testfall:
-    // Beim Löschen eines Trainingsplans müssen:
+    // Test:Beim Löschen eines Trainingsplans müssen:
     //  --> alle Sessions vom Plan entkoppelt werden
     //  --> der Plan selbst gelöscht werden
     @Test

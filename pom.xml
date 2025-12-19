@@ -91,6 +91,7 @@
 
  <build>
      <plugins>
+         <!-- JaCoCo1 Maven Plugin for Code Coverage -->
          <plugin>
              <groupId>org.apache.maven.plugins</groupId>
              <artifactId>maven-surefire-plugin</artifactId>
@@ -168,11 +169,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-
-            <!-- JaCoCo1 Maven Plugin for Code Coverage -->
-
-
         </plugins>
     </build>
-
 </project>

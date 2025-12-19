@@ -43,33 +43,26 @@ class TrainingSessionTemplateServiceUnitTest {
     @InjectMocks
     private TrainingSessionTemplateService service;
 
-    // Testfall:
-    // Der Name ist leer
+    // Test:Der Name ist leer
     // --> Laut Validierungslogik ist ein leerer Name nicht erlaubt
     @Test
     void shouldThrowExceptionWhenSessionNameIsMissing() {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName("");
-        assertThrows(ResponseStatusException.class,
-                () -> service.createSession(req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
 
-    // Testfall:
-    // Der orderIndex ist größer als erlaubt
+    // Testfall: Der orderIndex ist größer als erlaubt
     // --> Der Service muss dies ablehnen
     @Test
     void shouldThrowExceptionWhenOrderIndexIsInvalid() {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName("Session");
         req.setOrderIndex(31); // Maximal erlaubt ist 30
-        assertThrows(ResponseStatusException.class,
-                () -> service.createSession(req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
 
-    // Testfall:
-    // Ein Trainingsplan hat bereits 30 Sessions
+    // Test: Ein Trainingsplan hat bereits 30 Sessions
     // --> Es darf keine weitere Session hinzugefügt werden
     @Test
     void shouldThrowExceptionWhenPlanHasMaxSessions() {
@@ -86,14 +79,12 @@ class TrainingSessionTemplateServiceUnitTest {
                 ResponseStatusException.class,
                 () -> service.createSession(req)
         );
-        // Überprüfung der Fehlermeldung
+        //Überprüfung der Fehlermeldung
         assertTrue(ex.getReason().contains("maximal 30 Sessions"));
     }
 
-    // Testfall:
-    // Der orderIndex ist im Trainingsplan bereits vergeben
+    // Test: Der orderIndex ist im Trainingsplan bereits vergeben
     // --> Der Service muss einen Konflikt melden
-
     @Test
     void shouldThrowConflictExceptionWhenOrderIndexAlreadyUsed() {
 
@@ -106,13 +97,10 @@ class TrainingSessionTemplateServiceUnitTest {
         when(sessionRepository.countByTrainingPlan_Id(1L)).thenReturn(5L);
         when(sessionRepository.findByTrainingPlan_IdAndOrderIndex(1L, 5))
                 .thenReturn(Optional.of(new TrainingSession1()));
-        assertThrows(
-                ResponseStatusException.class,
-                () -> service.createSession(req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
-    // Testfall:
-    // Die zu aktualisierende Session existiert nicht
+
+    // Test:Die zu aktualisierende Session existiert nicht
     //--> Der Service muss eine NOT_FOUND-Exception werfen
     @Test
     void updateSession_shouldThrowNotFoundWhenIdInvalid() {
@@ -120,13 +108,10 @@ class TrainingSessionTemplateServiceUnitTest {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName("Test");
         req.setOrderIndex(1);
-        assertThrows(ResponseStatusException.class,
-                () -> service.updateSession(99L, req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(99L, req));
     }
 
-    // Testfall:
-    // Eine Session wird ohne Trainingsplan erstellt
+    // Test: Eine Session wird ohne Trainingsplan erstellt
     // --> Dieser Branch ist wichtig da planId optional ist
     @Test
     void createSession_shouldWorkWithoutPlanId() {
@@ -146,8 +131,8 @@ class TrainingSessionTemplateServiceUnitTest {
         assertEquals("Freies Training", resp.getName());
         assertNull(resp.getPlanId());
     }
-    // Testfall:
-    // Eine bestehende Session wird aktualisiert und explizit keinem Trainingsplan zugeordnet
+
+    // Test: Eine bestehende Session wird aktualisiert und explizit keinem Trainingsplan zugeordnet
     @Test
     void updateSession_shouldWorkWithoutPlan() {
         TrainingSession1 session = TrainingSession1.builder()
@@ -167,21 +152,16 @@ class TrainingSessionTemplateServiceUnitTest {
         assertNull(result.getPlanId());
     }
 
-    // Testfall:
-    // Der Name ist null
+    // Test: Der Name ist null
     // --> Testet explizit die Null-Prüfung im Service
     @Test
     void createSession_shouldThrowWhenNameIsNull() {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName(null);
-
-        assertThrows(
-                ResponseStatusException.class,
-                () -> service.createSession(req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
-    // Testfall:
-    // Der orderIndex ist kleiner als 1
+
+    // Test:Der orderIndex ist kleiner als 1
     // --> Dieser Wert ist laut Regel ungültig
     @Test
     void createSession_shouldThrowWhenOrderIndexTooLow() {
@@ -191,39 +171,30 @@ class TrainingSessionTemplateServiceUnitTest {
         assertThrows(ResponseStatusException.class, () -> service.createSession(req));
     }
 
-    // Testfall:
-    // Der Name besteht nur aus Leerzeichen
+    // Test: Der Name besteht nur aus Leerzeichen
     // Testet die isBlank()-Validierung
-
     @Test
     void updateSession_shouldThrowWhenNameIsBlank() {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName("  "); // Testet: if (request.getName().isBlank())
         req.setOrderIndex(5);
-
         TrainingSession1 session = TrainingSession1.builder().id(1L).build();
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
-
         assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
     }
 
 
-    // Testfall:
-    // Eine Session wird gelöscht
+    // Test:Eine Session wird gelöscht
     // --> Der Service delegiert korrekt an das Repository
     @Test
     void deleteSession_shouldCallRepository() {
-
         TrainingSession1 session = TrainingSession1.builder().id(1L).build();
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
-
         service.deleteSession(1L);
-
         verify(sessionRepository).delete(session);
     }
 
-    // Testfall:
-    // Der orderIndex fehlt
+    //Test: Der orderIndex fehlt
     // --> Dieser Branch verhindert inkonsistente Daten
     @Test
     void updateSession_shouldThrowWhenOrderIndexIsNull() {
@@ -232,30 +203,22 @@ class TrainingSessionTemplateServiceUnitTest {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName("Valid Name");
         req.setOrderIndex(null); // Testet: if (request.getOrderIndex() == null)
-        assertThrows(ResponseStatusException.class,
-                () -> service.updateSession(1L, req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
     }
 
-    // Testfall:
-    // Der Name ist null beim Update
+    // Test: Der Name ist null beim Update
     // --> Muss abgelehnt werden
     @Test
     void updateSession_shouldThrowWhenNameIsNull() {
         TrainingSession1 session = TrainingSession1.builder().id(1L).build();
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
-
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName(null); // Testet: if (request.getName() == null)
         req.setOrderIndex(5);
-
-        assertThrows(ResponseStatusException.class,
-                () -> service.updateSession(1L, req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
     }
 
-    // Testfall:
-    // Der orderIndex überschreitet das Maximum von 30.
+    // Test:Der orderIndex überschreitet das Maximum von 30.
     @Test
     void updateSession_shouldThrowWhenOrderIndexTooHigh() {
 
@@ -265,17 +228,12 @@ class TrainingSessionTemplateServiceUnitTest {
         TrainingSessionTemplateRequest req = new TrainingSessionTemplateRequest();
         req.setName("Test");
         req.setOrderIndex(33);  // Testet: if (request.getOrderIndex() > 30)
-
-        assertThrows(ResponseStatusException.class,
-                () -> service.updateSession(1L, req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
     }
-    // Testfall:
-    // Eine planId wird angegeben der Trainingsplan existiert aber nicht
+    // Test: Eine planId wird angegeben der Trainingsplan existiert aber nicht
     // --> Der Service muss dies ablehnen
     @Test
     void updateSession_shouldThrowWhenPlanNotFound() {
-
         TrainingSession1 session = TrainingSession1.builder().id(1L).build();
         when(sessionRepository.findById(1L)).thenReturn(Optional.of(session));
         when(planRepository.findById(99L)).thenReturn(Optional.empty());
@@ -283,11 +241,6 @@ class TrainingSessionTemplateServiceUnitTest {
         req.setName("Test");
         req.setOrderIndex(1);
         req.setPlanId(99L);
-
-        assertThrows(
-                ResponseStatusException.class,
-                () -> service.updateSession(1L, req)
-        );
+        assertThrows(ResponseStatusException.class, () -> service.updateSession(1L, req));
     }
 }
-//commited

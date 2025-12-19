@@ -53,8 +53,7 @@ class SessionLogServiceUnitTest {
         templateSession = TrainingSession1.builder().id(10L).name("Temp").build();
     }
 
-    // Testfall:
-    // Eine Trainingssession existiert enthält aber KEINE Übungstemplates
+    // Test:Eine Trainingssession existiert enthält aber KEINE Übungstemplates
     // --> Laut Business-Regel darf eine Session ohne Übungen nicht gestartet werden
     @Test
     void start_whenNoTemplates_shouldThrow() {
@@ -63,16 +62,12 @@ class SessionLogServiceUnitTest {
                 .thenReturn(List.of());
         SessionLogCreateRequest req = new SessionLogCreateRequest();
         req.setSessionTemplateId(10L);
-        ResponseStatusException ex = assertThrows(
-                ResponseStatusException.class,
-                () -> service.start(req)
-        );
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.start(req));
         // Erwartung: Fehlermeldung weist darauf hin, dass mindestens eine Übung nötig ist
         assertTrue(ex.getMessage().contains("must contain at least one exercise"));
     }
 
-    // Testfall (Happy Path):
-    // Eine gültige Session mit mindestens einem Template wird gestartet
+    // Test (Happy Path): Eine gültige Session mit mindestens einem Template wird gestartet
     // -->  Es werden ein SessionLog und dazugehörige ExecutionLogs erzeugt
     @Test
     void start_happyPath_createsLogs() {
@@ -110,8 +105,7 @@ class SessionLogServiceUnitTest {
         verify(executionLogRepository, times(1)).save(any());
     }
 
-    // Testfall:
-    // Ungültige tatsächliche Werte (Sets <= 0, Reps <= 0, Gewicht < 0)
+    // Test: Ungültige tatsächliche Werte (Sets <= 0, Reps <= 0, Gewicht < 0)
     // --> müssen durch die Validierung abgelehnt werden
     @Test
     void updateExecution_whenInvalidValues_shouldThrow() {
@@ -131,15 +125,11 @@ class SessionLogServiceUnitTest {
         req.setActualSets(0);   // ungültig
         req.setActualReps(0);   // ungültig
         req.setActualWeight(-1.0); // ungültig
-        ResponseStatusException ex = assertThrows(
-                ResponseStatusException.class,
-                () -> service.updateExecution(req)
-        );
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.updateExecution(req));
         assertTrue(ex.getMessage().contains("Invalid actual values"));
     }
 
-    // Testfall:
-    // Änderungen sind nur erlaubt wenn die Session IN_PROGRESS ist
+    // Test:Änderungen sind nur erlaubt wenn die Session IN_PROGRESS ist
     @Test
     void updateExecution_whenNotInProgress_shouldThrow() {
         ExecutionLog exec = ExecutionLog.builder()
@@ -153,15 +143,12 @@ class SessionLogServiceUnitTest {
         req.setActualSets(3);
         req.setActualReps(10);
         req.setActualWeight(0.0);
-        ResponseStatusException ex = assertThrows(
-                ResponseStatusException.class,
-                () -> service.updateExecution(req)
-        );
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.updateExecution(req));
         assertTrue(ex.getMessage().contains("IN_PROGRESS"));
     }
 
-    // Testfall (Happy Path):
-    // Gültige Werte, Session ist IN_PROGRESS → Update erfolgreich
+    // Test (Happy Path):Gültige Werte, Session ist IN_PROGRESS
+    // --> Update erfolgreich
     @Test
     void updateExecution_whenValid_updatesAndReturns() {
         ExecutionLog exec = ExecutionLog.builder()
@@ -194,8 +181,8 @@ class SessionLogServiceUnitTest {
         assertEquals("good", resp.getNotes());
     }
 
-    // Testfall:
-    // ExecutionLog mit der ID existiert nicht → 404 Fehler
+    // Test:ExecutionLog mit der ID existiert nicht
+    // --> Fehler
     @Test
     void updateExecution_whenNotFound_shouldThrow() {
         when(executionLogRepository.findById(123L)).thenReturn(Optional.empty());
@@ -204,15 +191,12 @@ class SessionLogServiceUnitTest {
         req.setActualSets(1);
         req.setActualReps(1);
         req.setActualWeight(1.0);
-        ResponseStatusException ex = assertThrows(
-                ResponseStatusException.class,
-                () -> service.updateExecution(req)
-        );
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.updateExecution(req));
         assertTrue(ex.getMessage().contains("ExecutionLog not found"));
     }
 
-    // Testfall:
-    // completed = null → bestehender Wert darf NICHT überschrieben werden.
+    // Test:completed = null
+    // --> bestehender Wert darf NICHT überschrieben werden.
     @Test
     void updateExecution_whenCompletedNull_keepsPreviousCompletedValue() {
         ExecutionLog exec = ExecutionLog.builder()
@@ -235,8 +219,7 @@ class SessionLogServiceUnitTest {
         assertFalse(resp.getCompleted());
     }
 
-    // Testfall:
-    // Eine Session die nicht IN_PROGRESS ist, darf nicht abgeschlossen werden
+    // Test: Eine Session die nicht IN_PROGRESS ist darf nicht abgeschlossen werden
     @Test
     void complete_whenNotInProgress_shouldThrow() {
         when(sessionLogRepository.findById(5L))
@@ -252,8 +235,7 @@ class SessionLogServiceUnitTest {
         assertTrue(ex.getMessage().contains("IN_PROGRESS"));
     }
 
-    // Testfall (Happy Path):
-    // IN_PROGRESS → Status wird auf COMPLETED gesetzt
+    // Test (Happy Path):IN_PROGRESS --> Status wird auf COMPLETED gesetzt
     @Test
     void complete_whenInProgress_completesAndReturnsSummary() {
         SessionLog log = SessionLog.builder()
@@ -269,8 +251,7 @@ class SessionLogServiceUnitTest {
         assertEquals(LogStatus.COMPLETED, summary.getStatus());
     }
 
-    // Testfall:
-    // Nur IN_PROGRESS Sessions dürfen abgebrochen werden
+    // Test:Nur IN_PROGRESS Sessions dürfen abgebrochen werden
     @Test
     void abort_whenNotInProgress_shouldThrow() {
         when(sessionLogRepository.findById(8L))
@@ -287,8 +268,8 @@ class SessionLogServiceUnitTest {
         assertTrue(ex.getMessage().contains("IN_PROGRESS"));
     }
 
-    // Testfall (Happy Path):
-    // IN_PROGRESS → SessionLog wird gelöscht
+    // Test (Happy Path):IN_PROGRESS
+    // --> SessionLog wird gelöscht
     @Test
     void abort_whenInProgress_deletes() {
         SessionLog log = SessionLog.builder()
@@ -300,8 +281,7 @@ class SessionLogServiceUnitTest {
         verify(sessionLogRepository).delete(log);
     }
 
-    // Testfall:
-    // Detail-Ansicht einer Session inklusive ExecutionLogs
+    // Test: Detail-Ansicht einer Session inklusive ExecutionLogs
     @Test
     void getDetail_withExecutions_returnsDetailWithExecutionInfo() {
         TrainingSession1 template = TrainingSession1.builder()
@@ -344,8 +324,7 @@ class SessionLogServiceUnitTest {
         assertEquals(2, e.getActualSets());
     }
 
-    // Testfall:
-    // Deckt ALLE Validierungs-Branches in updateExecution ab
+    // Test: Deckt ALLE Validierungs-Branches in updateExecution ab
     @Test
     void updateExecution_shouldCoverAllInvalidValueBranches() {
         ExecutionLog exec = ExecutionLog.builder()
