@@ -73,19 +73,19 @@ public class TrainingPlanController1 {
         return ResponseEntity.noContent().build();
     }
 
-    // Neu: Template in Plan übernehmen (Referenz)
+    // Neuer Endpunkt: Template in Plan aufnehmen
     @PostMapping("/{id}/templates")
-    public ResponseEntity<?> addTemplateToPlan(@PathVariable("id") Long planId,
+    public ResponseEntity<?> addTemplateToPlan(@PathVariable Long id,
                                                @RequestBody AddTemplateToPlanRequest request) {
-        trainingPlanService.addTemplateToPlan(planId, request.getTemplateId(), request.getPosition());
-        return ResponseEntity.ok(Map.of("message", "Template dem Plan hinzugefügt"));
+        trainingPlanService.addTemplateToPlan(id, request.getTemplateId(), request.getPosition());
+        return ResponseEntity.ok(Map.of("message", "Session-Vorlage hinzugefügt"));
     }
 
-    // Neu: Template aus Plan entfernen
+    // Neuer Endpunkt: Template aus Plan entfernen
     @DeleteMapping("/{id}/templates/{templateId}")
-    public ResponseEntity<?> removeTemplateFromPlan(@PathVariable("id") Long planId,
-                                                    @PathVariable("templateId") Long templateId) {
-        trainingPlanService.removeTemplateFromPlan(planId, templateId);
+    public ResponseEntity<?> removeTemplateFromPlan(@PathVariable Long id,
+                                                    @PathVariable Long templateId) {
+        trainingPlanService.removeTemplateFromPlan(id, templateId);
         return ResponseEntity.noContent().build();
     }
 

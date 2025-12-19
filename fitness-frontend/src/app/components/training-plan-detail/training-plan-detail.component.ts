@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FitnessService } from '../../services/fitness.service';
 import { TrainingPlanDetail, TrainingSessionSummary, Exercise } from '../../models/fitness.models';
@@ -24,6 +24,9 @@ export class TrainingPlanDetailComponent implements OnInit {
   plan: TrainingPlanDetail | null = null;
   availableExercises: Exercise[] = [];
   availableTemplates: { id: number; name: string; orderIndex: number }[] = [];
+
+  // neues FormControl für die Template-Auswahl
+  templateControl = new FormControl<number | null>(null);
 
   successMessage = '';
   errorMessage = '';
@@ -134,15 +137,16 @@ export class TrainingPlanDetailComponent implements OnInit {
     return this.availableTemplates.filter(t => !existingIds.has(t.id));
   }
 
-  // Hinzufügen vorhandener Vorlage in den Plan (Referenz)
-  addExistingTemplateToPlan(templateIdStr: string) {
+  // Hinzufügen vorhandener Vorlage in den Plan (Referenz) - verwendet das templateControl
+  addExistingTemplateToPlan() {
     if (!this.plan) return;
-    const templateId = Number(templateIdStr);
+    const templateId = Number(this.templateControl.value);
     if (!templateId || isNaN(templateId)) return;
     // optional: position aus UI (nicht implementiert hier, verwendet default null)
     this.service.addTemplateToPlan(this.plan.id, templateId).subscribe({
       next: () => {
         this.successMessage = 'Vorlage in Plan aufgenommen';
+        this.templateControl.setValue(null);
         this.loadPlanData();
         setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
       },

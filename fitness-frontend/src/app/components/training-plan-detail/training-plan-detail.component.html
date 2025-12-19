@@ -142,4 +142,15 @@
       </div>
     </div>
   </div>
+
+  <div class="mb-3">
+    <label class="form-label">Bestehende Vorlage in Plan aufnehmen</label>
+    <div class="mb-2">
+      <select class="form-select" [formControl]="templateControl">
+        <option value="">-- Vorlage wählen --</option>
+        <option *ngFor="let t of getTemplatesNotInPlan()" [value]="t.id">{{ t.name }} (ID: {{ t.id }})</option>
+      </select>
+    </div>
+    <button type="button" class="btn btn-outline-primary" (click)="addExistingTemplateToPlan()">Vorlage übernehmen</button>
+  </div>
 </div>
