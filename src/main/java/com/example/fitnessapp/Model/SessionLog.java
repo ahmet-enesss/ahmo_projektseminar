@@ -1,4 +1,6 @@
 package com.example.fitnessapp.Model;
+//Diese Klasse repräsentiert eine Sitzungsaufzeichnung einer Trainingssitzung
+//einschließlich der Dauer, des Status und der zugehörigen Übungsprotokolle
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,36 +9,39 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity // JPA-Entity für die Protokollierung einer Trainingssession-Ausführung
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity//Kennzeichnet die Klasse als JPA-Entity
+@Getter //Generiert automatisch Getter-Methoden
+@Setter //Generiert automatisch Setter-Methoden
+@NoArgsConstructor //Erstellt einen parameterlosen Konstruktor
+@AllArgsConstructor // Erstellt einen Konstruktor mit allen Parametern
+@Builder //Ermöglicht das Erstellen von Objekten mit dem Builder-Pattern
 public class SessionLog {
 
-    @Id
+    @Id // Markiert das Feld als Primärschlüssel
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Primärschlüssel der Entity, automatisch generiert
+    private Long id;
 
-    @ManyToOne(optional = false) // Many-to-One-Beziehung zum Template der Trainingssession
+    //Verweist auf die Vorlage für diese Sitzung (TrainingSession1)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "training_session_id")
     private TrainingSession1 templateSession;
 
-    private LocalDateTime startTime; // Zeitpunkt des Starts der Session
+    //Startzeit der Sitzung
+    private LocalDateTime startTime;
 
-    private LocalDateTime endTime; // Zeitpunkt des Endes der Session (null bei laufender Session)
+    // Endzeit der Sitzung
+    private LocalDateTime endTime;
 
-    @Enumerated(EnumType.STRING) // Status der Session (z. B. RUNNING, COMPLETED, ABORTED)
+    //Der aktuelle Status der Sitzung definiert durch das Enum LogStatus
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LogStatus status;
 
-    @Column(length = 2000)   // Optional: Notizen zur gesamten Session (max. 2000 Zeichen)
+    //Notizen die sich auf die gesamte Sitzung beziehen
+    @Column(length = 2000)
     private String notes;
 
-    // One-to-Many-Beziehung zu den Exercise Execution Logs dieser Session
-    // Cascade ALL: Änderungen an SessionLog werden auf ExerciseLogs übertragen
-    // orphanRemoval: Entfernte ExerciseLogs werden automatisch gelöscht
+    //Eine Sammlung der Übungsprotokolle (ExecutionLogs) die zu dieser Sitzung gehören
     @OneToMany(mappedBy = "sessionLog", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<ExecutionLog> exerciseLogs = new HashSet<>();

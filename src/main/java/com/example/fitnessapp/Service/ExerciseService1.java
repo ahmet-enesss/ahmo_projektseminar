@@ -14,24 +14,30 @@ import java.util.List;
 @Service
 public class ExerciseService1 {
 
+    //Zugriff auf die Übungsdatenbank
     @Autowired
     private ExerciseRepository1 exerciseRepository;
 
-    public List<Exercise1> getAllExercises() {   // Liefert alle Übungen
+    //Gibt alle Übungen zurück
+    public List<Exercise1> getAllExercises() {
         return exerciseRepository.findAll();
     }
-
-    public Exercise1 getExerciseById(Long id) {     // Liefert eine einzelne Übung anhand der ID
+    //Holt eine Übung per ID oder wirft 404
+    public Exercise1 getExerciseById(Long id) {
         return exerciseRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
     }
 
-    @Transactional  // Erstellt eine neue Übung
-    public Exercise1 createExercise(ExerciseRequest request) { // Prüft, ob bereits eine Übung mit demselben Namen existiert
+    //Erstellt neue Übung
+    @Transactional
+    public Exercise1 createExercise(ExerciseRequest request) {
+        //verhindert doppelte Namen
         if (exerciseRepository.findByName(request.getName()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise with this name already exists");
         }
-        validateRequest(request);  // Validierung der Eingabedaten
+        //Prüft Pflichtfelder
+        validateRequest(request);
+        //Erstellt neue Entity
         Exercise1 exercise = Exercise1.builder()
                 .name(request.getName())
                 .category(request.getCategory())
@@ -40,29 +46,30 @@ public class ExerciseService1 {
                 .build();
         return exerciseRepository.save(exercise);
     }
-
-    @Transactional // Neues Exercise-Entity erstellen
+    //Aktualisiert bestehende Übung
+    @Transactional
     public Exercise1 updateExercise(Long id, ExerciseRequest request) {
         Exercise1 existing = getExerciseById(id);
-        validateRequest(request);   // Validierung der Eingabedaten
+        validateRequest(request);//Prüft Pflichtfelder
+        //Prüft Namenskonflikt
         if (exerciseRepository.findByNameAndIdNot(request.getName(), id).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise with this name already exists");  // Prüft, ob der neue Name bereits für eine andere Übung existiert
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise with this name already exists");
         }
-        existing.setName(request.getName());  // Felder aktualisieren
+        //Felder aktualisieren
+        existing.setName(request.getName());
         existing.setCategory(request.getCategory());
         existing.setMuscleGroups(request.getMuscleGroups());
         existing.setDescription(request.getDescription());
-        return exerciseRepository.save(existing);   // Speichern und zurückgeben
+        return exerciseRepository.save(existing);
     }
-
-    @Transactional  // Aktualisiert eine bestehende Übung
+    //Löscht eine Übung
+    @Transactional
     public void deleteExercise(Long id) {
         Exercise1 existing = getExerciseById(id);
         exerciseRepository.delete(existing);
     }
-
+    //Validiert die Eingabdaten
     private void validateRequest(ExerciseRequest request) {
-        // Validiert die Eingabedaten für Create/Update
         if (request.getName() == null || request.getName().isBlank()
                 || request.getCategory() == null || request.getCategory().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name and category are required");
