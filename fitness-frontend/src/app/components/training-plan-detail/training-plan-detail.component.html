@@ -80,6 +80,20 @@
               Hinweis: Übungen können später in der Session-Detailansicht hinzugefügt werden.
             </small>
           </form>
+
+          <hr />
+
+          <div class="mb-3">
+            <label class="form-label">Bestehende Vorlage in Plan aufnehmen</label>
+            <div class="input-group">
+              <select class="form-select" #templateSelect>
+                <option value="">-- Vorlage wählen --</option>
+                <option *ngFor="let t of getTemplatesNotInPlan()" [value]="t.id">{{ t.name }} (ID: {{ t.id }})</option>
+              </select>
+              <button class="btn btn-outline-primary" type="button" (click)="addExistingTemplateToPlan(templateSelect.value)">Vorlage übernehmen</button>
+            </div>
+            <small class="text-muted d-block mt-2">Die Vorlage wird als Referenz in den Plan aufgenommen.</small>
+          </div>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import com.example.fitnessapp.DTOs.TrainingPlanDetailResponse;
 import com.example.fitnessapp.Service.TrainingPlanService1;
 import com.example.fitnessapp.DTOs.TrainingPlanOverviewResponse;
 import com.example.fitnessapp.Model.TrainingPlan1;
+import com.example.fitnessapp.DTOs.AddTemplateToPlanRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,6 +70,22 @@ public class TrainingPlanController1 {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrainingPlan(@PathVariable Long id) {
         trainingPlanService.deleteTrainingPlan(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Neu: Template in Plan übernehmen (Referenz)
+    @PostMapping("/{id}/templates")
+    public ResponseEntity<?> addTemplateToPlan(@PathVariable("id") Long planId,
+                                               @RequestBody AddTemplateToPlanRequest request) {
+        trainingPlanService.addTemplateToPlan(planId, request.getTemplateId(), request.getPosition());
+        return ResponseEntity.ok(Map.of("message", "Template dem Plan hinzugefügt"));
+    }
+
+    // Neu: Template aus Plan entfernen
+    @DeleteMapping("/{id}/templates/{templateId}")
+    public ResponseEntity<?> removeTemplateFromPlan(@PathVariable("id") Long planId,
+                                                    @PathVariable("templateId") Long templateId) {
+        trainingPlanService.removeTemplateFromPlan(planId, templateId);
         return ResponseEntity.noContent().build();
     }
 

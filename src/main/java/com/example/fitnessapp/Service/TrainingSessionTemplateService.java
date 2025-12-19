@@ -9,6 +9,8 @@ import com.example.fitnessapp.Repository.ExerciseExecutionTemplateRepository;
 import com.example.fitnessapp.Repository.SessionLogRepository;
 import com.example.fitnessapp.Repository.TrainingPlanRepository1;
 import com.example.fitnessapp.Repository.TrainingSessionRepository1;
+import com.example.fitnessapp.Repository.TrainingPlanSessionTemplateRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,16 +26,30 @@ public class TrainingSessionTemplateService {
     private final TrainingPlanRepository1 planRepository;
     private final ExerciseExecutionTemplateRepository exerciseTemplateRepository;
     private final SessionLogRepository sessionLogRepository;
+    private final TrainingPlanSessionTemplateRepository planTemplateRepository; // may be null for backward compatibility
 
+    // Neuer Konstruktor mit planTemplateRepository
+    @Autowired
+    public TrainingSessionTemplateService(
+            TrainingSessionRepository1 sessionRepository,
+            TrainingPlanRepository1 planRepository,
+            ExerciseExecutionTemplateRepository exerciseTemplateRepository,
+            SessionLogRepository sessionLogRepository,
+            TrainingPlanSessionTemplateRepository planTemplateRepository) {
+        this.sessionRepository = sessionRepository;
+        this.planRepository = planRepository;
+        this.exerciseTemplateRepository = exerciseTemplateRepository;
+        this.sessionLogRepository = sessionLogRepository;
+        this.planTemplateRepository = planTemplateRepository;
+    }
+
+    // Überladener Konstruktor (abwärtskompatibel falls Tests alten Konstruktor verwenden)
     public TrainingSessionTemplateService(
             TrainingSessionRepository1 sessionRepository,
             TrainingPlanRepository1 planRepository,
             ExerciseExecutionTemplateRepository exerciseTemplateRepository,
             SessionLogRepository sessionLogRepository) {
-        this.sessionRepository = sessionRepository;
-        this.planRepository = planRepository;
-        this.exerciseTemplateRepository = exerciseTemplateRepository;
-        this.sessionLogRepository = sessionLogRepository;
+        this(sessionRepository, planRepository, exerciseTemplateRepository, sessionLogRepository, null);
     }
 
     public List<TrainingSessionTemplateOverviewResponse> getAllSessions() {
@@ -56,6 +72,11 @@ public class TrainingSessionTemplateService {
         }
         if (request.getOrderIndex() == null || request.getOrderIndex() < 1 || request.getOrderIndex() > 30) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reihenfolge muss zwischen 1 und 30 liegen");
+        }
+
+        // Neue Validierung: globaler eindeutiger Name
+        if (sessionRepository.findByName(request.getName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Es existiert bereits eine Session mit demselben Namen");
         }
 
         // Plan prüfen (falls angegeben)
@@ -99,6 +120,11 @@ public class TrainingSessionTemplateService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reihenfolge muss zwischen 1 und 30 liegen");
         }
 
+        // Neue Validierung: globaler eindeutiger Name (außer für diese Session)
+        if (sessionRepository.findByNameAndIdNot(request.getName(), id).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Es existiert bereits eine Session mit demselben Namen");
+        }
+
         // Plan prüfen (falls angegeben)
         TrainingPlan1 plan = null;
         if (request.getPlanId() != null) {
@@ -123,8 +149,19 @@ public class TrainingSessionTemplateService {
     public void deleteSession(Long id) {
         TrainingSession1 session = sessionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session-Vorlage nicht gefunden"));
-        
-        // SessionLogs bleiben erhalten (Historie bleibt erhalten)
+
+        // Lösche Join-Links (falls vorhanden), um FK-Probleme zu vermeiden
+        if (planTemplateRepository != null) {
+            planTemplateRepository.deleteByTrainingSession_Id(id);
+        }
+
+        // Lösche ExerciseExecutionTemplates dieser Session
+        List<ExerciseExecutionTemplate> exercises = exerciseTemplateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(id);
+        if (!exercises.isEmpty()) {
+            exerciseTemplateRepository.deleteAll(exercises);
+        }
+
+        // Session löschen
         sessionRepository.delete(session);
     }
 
@@ -146,4 +183,3 @@ public class TrainingSessionTemplateService {
                 .build();
     }
 }
-

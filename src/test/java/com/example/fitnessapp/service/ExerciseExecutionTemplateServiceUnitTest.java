@@ -40,6 +40,7 @@ class ExerciseExecutionTemplateServiceUnitTest {
     @InjectMocks// Das zu testende Service-Objekt
     // Mockito injiziert automatisch alle oben definierten Mocks
     private ExerciseExecutionTemplateService service;
+
     private TrainingSession1 session;
     private Exercise1 exercise;
 
@@ -51,7 +52,8 @@ class ExerciseExecutionTemplateServiceUnitTest {
         exercise = Exercise1.builder().id(3L).name("E").category("C").build();
     }
 
-    // Test:Wenn die Trainingssession nicht existiert
+    // Testfall:
+    // Wenn die Trainingssession nicht existiert
     // --> soll der Service eine 404-Exception werfen
     @Test
     void create_whenSessionMissing_throws() {
@@ -71,8 +73,10 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertTrue(ex.getMessage().contains("TrainingSession not found"));
     }
 
-    // Test:Session existiert aber die Übung nicht
+    // Testfall:
+    // Session existiert aber die Übung nicht
     // --> Fehler
+
     @Test
     void create_whenExerciseMissing_throws() {
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
@@ -82,15 +86,19 @@ class ExerciseExecutionTemplateServiceUnitTest {
         req.setPlannedReps(10);
         req.setPlannedWeight(0.0);
         req.setOrderIndex(1);
+
         // Session wird gefunden
         when(trainingSessionRepository.findById(2L)).thenReturn(Optional.of(session));
         // Übung wird NICHT gefunden
         when(exerciseRepository.findById(3L)).thenReturn(Optional.empty());
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.create(req));
+        ResponseStatusException ex =
+                assertThrows(ResponseStatusException.class, () -> service.create(req));
+
         assertTrue(ex.getMessage().contains("Exercise not found"));
     }
 
-    // Test: Ungültige Planwerte (0 oder negativ)
+    // Testfall:
+    // Ungültige Planwerte (0 oder negativ)
     // --> validate()-Methode soll eine Exception werfen
     @Test
     void create_whenInvalidPlanned_throws() {
@@ -103,11 +111,14 @@ class ExerciseExecutionTemplateServiceUnitTest {
         req.setOrderIndex(1);
         when(trainingSessionRepository.findById(2L)).thenReturn(Optional.of(session));
         when(exerciseRepository.findById(3L)).thenReturn(Optional.of(exercise));
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.create(req));
+        ResponseStatusException ex =
+                assertThrows(ResponseStatusException.class, () -> service.create(req));
+
         assertTrue(ex.getMessage().contains("Invalid planned values"));
     }
 
-    // Test: Die Reihenfolge (orderIndex) ist in dieser Session bereits vergeben
+    // Testfall:
+    // Die Reihenfolge (orderIndex) ist in dieser Session bereits vergeben
     @Test
     void create_whenOrderTaken_throws() {
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
@@ -127,7 +138,8 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertTrue(ex.getMessage().contains("Order index already used"));
     }
 
-    // Test:Dieselbe Übung wurde der Session bereits hinzugefügt
+    // Testfall:
+    // Dieselbe Übung wurde der Session bereits hinzugefügt
     @Test
     void create_whenExerciseAlreadyAdded_throws() {
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
@@ -150,7 +162,8 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertTrue(ex.getMessage().contains("Exercise already added"));
     }
 
-    // Test (Happy Path): Alle Validierungen bestehen
+    // Testfall (Happy Path):
+    // Alle Validierungen bestehen
     // --> Template wird gespeichert
     @Test
     void create_happyPath_returnsResponse() {
@@ -161,6 +174,7 @@ class ExerciseExecutionTemplateServiceUnitTest {
         req.setPlannedReps(10);
         req.setPlannedWeight(0.0);
         req.setOrderIndex(2);
+
         when(trainingSessionRepository.findById(2L)).thenReturn(Optional.of(session));
         when(exerciseRepository.findById(3L)).thenReturn(Optional.of(exercise));
         when(templateRepository.existsByTrainingSession_IdAndOrderIndex(2L, 2)).thenReturn(false);
@@ -176,7 +190,8 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertEquals(3, resp.getPlannedSets());
     }
 
-    // Test:Template-ID existiert nicht --> 404
+    // Testfall:
+    // Template-ID existiert nicht --> 404
     @Test
     void update_whenTemplateNotFound_throws() {
         when(templateRepository.findById(5L)).thenReturn(Optional.empty());
@@ -186,7 +201,9 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertTrue(ex.getMessage().contains("Template not found"));
     }
 
-    // Testet:Repository-Abfrage & Mapping von Entity
+    // Testet:
+    // - Repository-Abfrage
+    // - Mapping von Entity
     // --> Response DTO
     @Test
     void getForSession_returnsMappedResponses() {
@@ -207,7 +224,7 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertEquals(1, list.size());
         assertEquals(3, list.get(0).getPlannedReps());
     }
-    // Test: Wenn beim Update der orderIndex mit einem bestehenden kollidiert muss eine Exception kommen
+    // Test sagt: Wenn beim Update der orderIndex mit einem bestehenden kollidiert, muss eine Exception kommen.
     @Test
     void update_whenOrderConflict_throws() {
         ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder().id(5L).orderIndex(1).trainingSession(session).exercise(exercise).build();
@@ -217,13 +234,14 @@ class ExerciseExecutionTemplateServiceUnitTest {
         req.setPlannedReps(8);
         req.setPlannedWeight(0.0);
         req.setOrderIndex(2);
+
         when(templateRepository.findById(5L)).thenReturn(Optional.of(existing));
         when(templateRepository.existsByTrainingSession_IdAndOrderIndex(session.getId(), 2)).thenReturn(true);
+
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.update(5L, req));
         assertTrue(ex.getMessage().contains("Order index already used"));
     }
-
-    // Test: Wenn beim Update die neue Übung-ID nicht existiert muss eine Exception kommen
+    // Test sagt: Wenn beim Update die neue Übung-ID nicht existiert, muss eine Exception kommen.
     @Test
     void update_whenExerciseNotFound_throws() {
         ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder().id(6L).orderIndex(1).trainingSession(session).exercise(exercise).build();
@@ -233,12 +251,14 @@ class ExerciseExecutionTemplateServiceUnitTest {
         req.setPlannedReps(8);
         req.setPlannedWeight(0.0);
         req.setOrderIndex(1);
+
         when(templateRepository.findById(6L)).thenReturn(Optional.of(existing));
         when(exerciseRepository.findById(99L)).thenReturn(Optional.empty());
+
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.update(6L, req));
         assertTrue(ex.getMessage().contains("Exercise not found"));
     }
-    // Test: Wenn man beim Update eine Übung setzt die in der Session schon vorhanden ist, muss eine Exception kommen
+    // Test sagt: Wenn man beim Update eine Übung setzt, die in der Session schon vorhanden ist, muss eine Exception kommen.
     @Test
     void update_whenDuplicateExercise_throws() {
         ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder().id(7L).orderIndex(1).trainingSession(session).exercise(Exercise1.builder().id(3L).build()).build();
@@ -248,6 +268,7 @@ class ExerciseExecutionTemplateServiceUnitTest {
         req.setPlannedReps(8);
         req.setPlannedWeight(0.0);
         req.setOrderIndex(1);
+
         when(templateRepository.findById(7L)).thenReturn(Optional.of(existing));
         when(exerciseRepository.findById(4L)).thenReturn(Optional.of(Exercise1.builder().id(4L).build()));
         when(templateRepository.existsByTrainingSession_IdAndExercise_Id(existing.getTrainingSession().getId(), 4L)).thenReturn(true);
@@ -256,7 +277,7 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertTrue(ex.getMessage().contains("Exercise already added"));
     }
 
-    //Test: Wenn alle Daten ok sind soll update funktionieren und die Antwort die neuen Werte enthalten
+    // Test sagt: Wenn alle Daten ok sind, soll update funktionieren und die Antwort die neuen Werte enthalten.
     @Test
     void update_happyPath_returnsResponse() {
         ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder()
@@ -286,37 +307,39 @@ class ExerciseExecutionTemplateServiceUnitTest {
         assertEquals(10, resp.getPlannedReps());
     }
 
-    //Testet nur die Weiterleitung an das Repository
+    // Testet nur die Weiterleitung an das Repository
     //es wird nur geprüft, dass deleteById aufgerufen wird.
+    // Test sagt: service.delete muss templateRepository.deleteById ausführen
     @Test
     void delete_callsRepository() {
         service.delete(4L);
         verify(templateRepository).deleteById(4L);
     }
-
-    // Test: jede einzelne ungültige Eingabe (Sets/Reps/Weight/OrderIndex) muss eine Exception auslösen
+    // Test sagt: jede einzelne ungültige Eingabe (Sets/Reps/Weight/OrderIndex) muss eine Exception auslösen
     @Test
     void validate_shouldThrowForEveryInvalidBranch() {
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
         req.setSessionId(2L);
         req.setExerciseId(3L);
+
         // Fall 1: Sets <= 0
         req.setPlannedSets(0); req.setPlannedReps(10); req.setPlannedWeight(5.0); req.setOrderIndex(1);
         assertThrows(ResponseStatusException.class, () -> service.create(req));
+
         // Fall 2: Reps <= 0
         req.setPlannedSets(3); req.setPlannedReps(0);
         assertThrows(ResponseStatusException.class, () -> service.create(req));
+
         // Fall 3: Weight < 0
         req.setPlannedReps(10); req.setPlannedWeight(-0.1);
         assertThrows(ResponseStatusException.class, () -> service.create(req));
+
         // Fall 4: OrderIndex <= 0
         req.setPlannedWeight(5.0); req.setOrderIndex(0);
         assertThrows(ResponseStatusException.class, () -> service.create(req));
     }
-
-    // Test: Wenn orderIndex beim Update gleich bleibt, darf der Konflikt-Check nicht „nötig“ sein und es soll nicht crashen
-    // Testet den Branch, bei dem die Order gleich bleibt (!existing.getOrderIndex().equals(request.getOrderIndex()))
-    // Bedeutet: der Codezweig für Konfliktprüfung wird nur ausgeführt, wenn sich orderIndex ändert
+    // Test sagt: Wenn orderIndex beim Update gleich bleibt, darf der Konflikt-Check nicht „nötig“ sein und es soll nicht crashen.
+    // Testet den Branch, bei dem die Order gleich bleibt (!existing.getOrderIndex().equals(request.getOrderIndex())) // Bedeutet: der Codezweig für Konfliktprüfung wird nur ausgeführt, wenn sich orderIndex ändert.
     @Test
     void update_shouldNotTriggerOrderConflictWhenOrderIsSame() {
         // Testet den Branch, bei dem die Order gleich bleibt (!existing.getOrderIndex().equals(request.getOrderIndex()))
@@ -325,40 +348,44 @@ class ExerciseExecutionTemplateServiceUnitTest {
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
         req.setOrderIndex(5); // Gleiche Nummer
         req.setExerciseId(3L); req.setPlannedSets(3); req.setPlannedReps(10); req.setPlannedWeight(0.0);
+
         when(templateRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(exerciseRepository.findById(3L)).thenReturn(Optional.of(exercise));
         when(templateRepository.save(any())).thenReturn(existing);
+
         assertDoesNotThrow(() -> service.update(1L, req));
         // Hier wird der existsBy... Check im Service übersprungen -> Branch Abdeckung!
     }
-
-    //Test: Wenn die Übung-ID gleich bleibt, soll der Duplicate-Check nicht ausgeführt werden
-    //Testet den Branch: if (!existing.getExercise().getId().equals(exercise.getId()))
-    //Bedeutet: Duplicate-Check läuft nur wenn die ExerciseId sich ändert
+    //Test sagt: Wenn die Übung-ID gleich bleibt, soll der Duplicate-Check nicht ausgeführt werden.
+    // Testet den Branch: if (!existing.getExercise().getId().equals(exercise.getId())) // Bedeutet: Duplicate-Check läuft nur, wenn die ExerciseId sich ändert.
     @Test
     void update_shouldNotCheckDuplicateExerciseIfExerciseRemainsSame() {
         // Testet den Branch: if (!existing.getExercise().getId().equals(exercise.getId()))
         Exercise1 sameExercise = Exercise1.builder().id(3L).build();
         ExerciseExecutionTemplate existing = ExerciseExecutionTemplate.builder()
                 .id(1L).exercise(sameExercise).trainingSession(session).orderIndex(1).build();
+
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
         req.setExerciseId(3L); // Gleiche ID wie oben
         req.setPlannedSets(3); req.setPlannedReps(10); req.setPlannedWeight(10.0); req.setOrderIndex(1);
+
         when(templateRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(exerciseRepository.findById(3L)).thenReturn(Optional.of(sameExercise));
         when(templateRepository.save(any())).thenReturn(existing);
+
         assertDoesNotThrow(() -> service.update(1L, req));
         // Verify: existsByTrainingSession_IdAndExercise_Id wird NICHT aufgerufen
         verify(templateRepository, never()).existsByTrainingSession_IdAndExercise_Id(any(), any());
     }
 
-    // Test: Wenn plannedWeight negativ ist muss create() eine Exception werfen
+    // Test sagt: Wenn plannedWeight negativ ist, muss create() eine Exception werfen.
     @Test
     void validate_shouldThrowWhenWeightIsNegative() {
         ExerciseExecutionTemplateRequest req = new ExerciseExecutionTemplateRequest();
         req.setPlannedSets(3); req.setPlannedReps(10);
         req.setPlannedWeight(-5.0); // Testet: if (plannedWeight < 0)
         req.setOrderIndex(1);
+
         // Wir triggern dies über create (da create validate aufruft)
         when(trainingSessionRepository.findById(any())).thenReturn(Optional.of(session));
         when(exerciseRepository.findById(any())).thenReturn(Optional.of(exercise));

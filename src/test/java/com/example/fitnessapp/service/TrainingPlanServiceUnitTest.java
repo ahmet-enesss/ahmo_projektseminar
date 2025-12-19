@@ -36,6 +36,9 @@ class TrainingPlanServiceUnitTest {
     @Mock// Mock für Übungstemplates innerhalb von Sessions
     private ExerciseExecutionTemplateRepository templateRepository;
 
+    @Mock
+    private com.example.fitnessapp.Repository.TrainingPlanSessionTemplateRepository planTemplateRepository;
+
     @InjectMocks// Das zu testende Service-Objekt
     // Mockito injiziert automatisch alle oben definierten Mocks
     private TrainingPlanService1 service;
@@ -52,7 +55,8 @@ class TrainingPlanServiceUnitTest {
                 .build();
     }
 
-    // Test:Es existiert ein Trainingsplan
+    // Testfall:
+    // Es existiert ein Trainingsplan
     // --> Der Service soll eine Übersicht zurückgeben inkl. Anzahl Sessions
     @Test
     void getAllTrainingPlans_returnsOverview() {
@@ -64,8 +68,9 @@ class TrainingPlanServiceUnitTest {
         // Die Anzahl der Sessions wird korrekt gemappt
         assertEquals(2L, list.get(0).getSessionCount());
     }
-    // Test: Trainingsplan mit dieser ID existiert nicht
-    // --> Der Service muss eine Exception werfen (Fehler)
+    // Testfall:
+    // Trainingsplan mit dieser ID existiert nicht
+    // --> Der Service muss eine Exception werfen (404)
     @Test
     void getTrainingPlanById_whenNotFound_throws() {
         when(planRepository.findById(5L)).thenReturn(Optional.empty());
@@ -76,7 +81,8 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("TrainingPlan not found"));
     }
 
-    // Test:Trainingsplan existiert hat aber noch KEINE Sessions
+    // Testfall:
+    // Trainingsplan existiert hat aber noch KEINE Sessions
     // Der Service soll:
     //  --> hasSessions = false setzen
     //  --> einen Hinweistext zurückgeben
@@ -90,8 +96,9 @@ class TrainingPlanServiceUnitTest {
         assertTrue(resp.getSessionsHint().contains("Noch keine"));
     }
 
-    // Test:Trainingsplan besitzt mindestens eine Session
-    // Zusätzlich werden die Übungstemplates pro Session gezählt
+    // Testfall:
+    // Trainingsplan besitzt mindestens eine Session.
+    // Zusätzlich werden die Übungstemplates pro Session gezählt.
     @Test
     void getTrainingPlanById_withSessions_returnsHasSessionsTrueAndSummaries() {
         TrainingSession1 s = TrainingSession1.builder()
@@ -112,7 +119,8 @@ class TrainingPlanServiceUnitTest {
         assertEquals(1, resp.getSessions().get(0).getExerciseCount());
     }
 
-    // Test:Ein Trainingsplan mit gleichem Namen existiert bereits
+    // Testfall:
+    // Ein Trainingsplan mit gleichem Namen existiert bereits
     // --> Der Service muss einen Conflict-Fehler werfen
     @Test
     void create_whenNameExists_throwsConflict() {
@@ -124,8 +132,8 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("already exists"));
     }
 
-    // Test(Happy Path): Kein Plan mit diesem Namen existiert
-    // --> Speichern erlaubt
+    // Testfall (Happy Path):
+    // Kein Plan mit diesem Namen existiert → Speichern erlaubt
     @Test
     void create_whenValid_saves() {
         when(planRepository.findByName("Plan")).thenReturn(Optional.empty());
@@ -137,19 +145,23 @@ class TrainingPlanServiceUnitTest {
         verify(planRepository).save(plan);
     }
 
-    // Test:Trainingsplan mit ID existiert nicht
-    // --> Exception
+    // Testfall:
+    // Trainingsplan mit ID existiert nicht → Exception
     @Test
     void update_whenNotFound_throws() {
         when(planRepository.findById(9L)).thenReturn(Optional.empty());
+        TrainingPlanRequest req = new TrainingPlanRequest();
+        req.setName("X");
+        req.setDescription("D");
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.updateTrainingPlan(9L, null)
+                () -> service.updateTrainingPlan(9L, req)
         );
         assertTrue(ex.getMessage().contains("TrainingPlan not found"));
     }
 
-    // Test:Neuer Name kollidiert mit einem anderen existierenden Trainingsplan
+    // Testfall:
+    // Neuer Name kollidiert mit einem anderen existierenden Trainingsplan
     @Test
     void update_whenNameConflict_throwsConflict() {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
@@ -167,8 +179,8 @@ class TrainingPlanServiceUnitTest {
         assertTrue(ex.getMessage().contains("already exists"));
     }
 
-    // Test (Happy Path):Trainingsplan existiert Name ist eindeutig
-    // --> Update erlaubt
+    // Testfall (Happy Path):
+    // Trainingsplan existiert Name ist eindeutig → Update erlaubt
     @Test
     void update_whenValid_saves() {
         when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
@@ -184,7 +196,8 @@ class TrainingPlanServiceUnitTest {
         verify(planRepository).save(any());
     }
 
-    // Test:Beim Löschen eines Trainingsplans müssen:
+    // Testfall:
+    // Beim Löschen eines Trainingsplans müssen:
     //  --> alle Sessions vom Plan entkoppelt werden
     //  --> der Plan selbst gelöscht werden
     @Test
@@ -203,5 +216,39 @@ class TrainingPlanServiceUnitTest {
         verify(sessionRepository).saveAll(any());
         // Trainingsplan wurde gelöscht
         verify(planRepository).delete(plan);
+    }
+
+    @Test
+    void addTemplateToPlan_createsCopyAndCopiesExercises() {
+        TrainingSession1 template = TrainingSession1.builder().id(20L).name("Tpl").orderIndex(1).build();
+        when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
+        when(sessionRepository.findById(20L)).thenReturn(Optional.of(template));
+        when(sessionRepository.countByTrainingPlan_Id(1L)).thenReturn(0L);
+        when(templateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(20L))
+                .thenReturn(List.of(ExerciseExecutionTemplate.builder().id(5L).build()));
+        when(sessionRepository.findByName(anyString())).thenReturn(Optional.empty());
+        when(sessionRepository.save(any())).thenAnswer(i -> {
+            TrainingSession1 s = i.getArgument(0);
+            s.setId(99L);
+            return s;
+        });
+
+        service.addTemplateToPlan(1L, 20L, null);
+
+        verify(sessionRepository).save(any());
+        verify(templateRepository).save(any());
+    }
+
+    @Test
+    void removeTemplateFromPlan_deletesSessionAndExercises() {
+        TrainingSession1 s = TrainingSession1.builder().id(30L).trainingPlan(plan).build();
+        when(sessionRepository.findById(30L)).thenReturn(Optional.of(s));
+        when(templateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(30L))
+                .thenReturn(List.of(ExerciseExecutionTemplate.builder().id(7L).build()));
+
+        service.removeTemplateFromPlan(1L, 30L);
+
+        verify(templateRepository).deleteAll(anyList());
+        verify(sessionRepository).delete(s);
     }
 }

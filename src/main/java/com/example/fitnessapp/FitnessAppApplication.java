@@ -33,7 +33,7 @@ public class FitnessAppApplication {
             }
         };
     }
-
+    // ----------------------------------------------------
 
     @Bean
     CommandLineRunner initDatabase(ExerciseRepository1 exerciseRepo, TrainingPlanRepository1 planRepo) {
