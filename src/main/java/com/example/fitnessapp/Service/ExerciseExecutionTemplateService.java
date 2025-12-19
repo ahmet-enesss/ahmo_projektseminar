@@ -1,3 +1,5 @@
+package com.example.fitnessapp.Service;
+
 import com.example.fitnessapp.DTOs.ExerciseExecutionTemplateRequest;
 import com.example.fitnessapp.DTOs.ExerciseExecutionTemplateResponse;
 import com.example.fitnessapp.Model.Exercise1;
