@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FitnessService } from '../../services/fitness.service';
 import { TrainingPlanDetail, TrainingSessionSummary, Exercise } from '../../models/fitness.models';
 
+//verbindet ts mit html und css
 @Component({
   selector: 'app-training-plan-detail',
   standalone: true,
@@ -19,17 +20,20 @@ export class TrainingPlanDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
+  //speichert geladene Trainingsplan und Liste verfügbaren Übungen
   plan: TrainingPlanDetail | null = null;
   availableExercises: Exercise[] = [];
 
   successMessage = '';
   errorMessage = '';
 
+  //bearbeitung name und beschreibung
   editForm = this.fb.group({
     name: ['', Validators.required],
     description: ['', Validators.required]
   });
 
+  //session hinzufügen (Name,Reihenfolge)
   sessionForm = this.fb.group({
     name: ['', Validators.required],
     orderIndex: [1, [Validators.required, Validators.min(1), Validators.max(30)]]
@@ -46,6 +50,7 @@ export class TrainingPlanDetailComponent implements OnInit {
     });
   }
 
+  //liest Plan-ID  und füllt die daten des plans aus
   loadPlanData() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.service.getTrainingPlanById(id).subscribe({
@@ -81,6 +86,7 @@ export class TrainingPlanDetailComponent implements OnInit {
     });
   }
 
+  //erstellt neuen Session vorlage für Plan und aktualisiert plan
   addSession() {
     if (!this.plan || this.sessionForm.invalid) return;
 

@@ -1,28 +1,32 @@
-<div class="container mt-4">
-  <button class="btn btn-secondary mb-3" (click)="goBack()">Zurück</button>
+<div class="container mt-4"> //Äußerer Seitenbereich mit Abstand nach oben
+  <button class="btn btn-secondary mb-3" (click)="goBack()">Zurück</button> //Button zum Zurücknavigieren
 
   <h2>Übungs Details</h2>
 
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div> //Erfolgsmeldung
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div> //Fehlermeldung
 
-  <form [formGroup]="editForm" (ngSubmit)="saveChanges()">
+  <form [formGroup]="editForm" (ngSubmit)="saveChanges()"> //Formular, Reactive-Form mit editForm verbunden //Beim Absenden saveChanges() ausgeführt
 
-    <div class="mb-3">
-      <label class="form-label">Name</label>
+    <div class="mb-3"> //Eingabebereich Name der Übung
+      <label class="form-label">Name</label> //Beschriftung Eingabebereich
+      //Textfeld für Name
+      //Bei ungültiger Eingabe oder bei bereits benutzung is-invalid
       <input
         type="text"
         class="form-control"
         formControlName="name"
         [class.is-invalid]="editForm.get('name')?.invalid && (editForm.get('name')?.dirty || editForm.get('name')?.touched)"
       />
+      //Hinweistext bei ungültigem Namen
       <div class="invalid-feedback">
         Der Name darf nicht leer sein.
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3"> //Auswahlbereich für Übungskategorie
       <label class="form-label">Kategorie</label>
+      //Dropdown-Auswahl für Kategorie
       <select
         class="form-select"
         formControlName="category"
@@ -30,29 +34,34 @@
       >
         <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
       </select>
+      //Hinweistext bei fehlender Kategorie
       <div class="invalid-feedback">
         Bitte eine Kategorie wählen.
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3"> //Eingabebereich für Muskelgruppen /
       <label class="form-label">Muskelgruppen (Kommagetrennt)</label>
+      //Textfeld für Muskelgruppen //Bei leerer/ungültiger Eingabe is-invalid
       <input
         type="text"
         class="form-control"
         formControlName="muscleGroupsInput"
         [class.is-invalid]="editForm.get('muscleGroupsInput')?.invalid && (editForm.get('muscleGroupsInput')?.dirty || editForm.get('muscleGroupsInput')?.touched)"
       />
+      //Hinweistext, wenn keine Muskelgruppe angegeben ist
       <div class="invalid-feedback">
         Mindestens eine Muskelgruppe ist erforderlich.
       </div>
     </div>
 
+    //Eingabebereich für Beschreibung
     <div class="mb-3">
       <label class="form-label">Beschreibung</label>
-      <textarea class="form-control" formControlName="description" rows="3"></textarea>
+      <textarea class="form-control" formControlName="description" rows="3"></textarea> //Textfeld für zusätzliche Info
     </div>
 
+    //Button zum Speichern der Änderungen, deaktiviert solange Formular ungültig
     <button type="submit" class="btn btn-success" [disabled]="editForm.invalid">
       Speichern
     </button>

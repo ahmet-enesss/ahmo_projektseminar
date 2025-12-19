@@ -6,6 +6,7 @@ import { FitnessService } from '../../services/fitness.service';
 import { ExecutionLog, SessionLog } from '../../models/fitness.models';
 import { firstValueFrom } from 'rxjs';
 
+//verbindet ts mit html und css
 @Component({
   selector: 'app-training-execution',
   standalone: true,
@@ -20,12 +21,14 @@ export class TrainingExecutionComponent implements OnInit {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
+  //speicher log-ID und trainings-log
   logId!: number;
   log: SessionLog | null = null;
 
   errorMessage = '';
   successMessage = '';
 
+  //pro Übung eigenes Formular abgespeichert
   executionForms = new Map<number, ReturnType<FormBuilder['group']>>();
 
   ngOnInit(): void {
@@ -109,7 +112,7 @@ export class TrainingExecutionComponent implements OnInit {
     try {
       const templates = await firstValueFrom(this.service.getExerciseTemplatesForSession(sessionTemplateId));
       if (!this.log) return;
-      // Map templates to ExecutionLog-like objects for UI (note: ids will be negative to indicate temporary)
+      // templates für ExecutionLog-like objekte werden für UI umgewandelt (note: negative ids bedeuten nur temporär )
       this.log.executions = templates.map((t, idx) => ({
         id: -(idx + 1),
         exerciseTemplateId: t.id,
@@ -125,7 +128,7 @@ export class TrainingExecutionComponent implements OnInit {
       }));
       this.cdr.detectChanges();
     } catch (e: any) {
-      // ignore fallback errors
+      // ignoriere fallback errors
     }
   }
 
@@ -146,7 +149,7 @@ export class TrainingExecutionComponent implements OnInit {
     const value = form.value;
     this.service.updateExecutionLog({
       executionLogId: exec.id,
-      // actual values
+      // aktuelle values
       actualSets: value.actualSets,
       actualReps: value.actualReps,
       actualWeight: value.actualWeight,

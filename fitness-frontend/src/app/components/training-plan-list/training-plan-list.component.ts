@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { FitnessService } from '../../services/fitness.service';
 import { TrainingPlanOverview } from '../../models/fitness.models';
 
+//verbindet ts mit html und css
 @Component({
   selector: 'app-training-plan-list',
   standalone: true,
@@ -17,9 +18,11 @@ export class TrainingPlanListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef); // <--- 2. Hier injizieren wir den "Wecker"
 
+  //enthält geladene Pläne
   plans: TrainingPlanOverview[] = [];
   errorMessage = '';
 
+  //eingabe für neue Trainingsplan
   planForm = this.fb.group({
     name: ['', Validators.required],
     description: ['', Validators.required]
@@ -29,6 +32,7 @@ export class TrainingPlanListComponent implements OnInit {
     this.loadPlans();
   }
 
+  //holt alle trainingspläne aus backend und aktualisier anzeige
   loadPlans() {
     this.service.getTrainingPlans().subscribe({
       next: (data) => {

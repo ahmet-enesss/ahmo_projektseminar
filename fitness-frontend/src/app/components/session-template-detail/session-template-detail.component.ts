@@ -5,6 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FitnessService } from '../../services/fitness.service';
 import { Exercise, ExerciseExecutionTemplate } from '../../models/fitness.models';
 
+//verbindet TS mit HTML und CSS
 @Component({
   selector: 'app-session-template-detail',
   standalone: true,
@@ -19,9 +20,11 @@ export class SessionTemplateDetailComponent implements OnInit {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
+  //IDs werden aus URL gelesen
   planId!: number;
   sessionId!: number;
 
+  //Daten von verfügbaren Übungen und Vorlagen der Session
   availableExercises: Exercise[] = [];
   templates: ExerciseExecutionTemplate[] = [];
 
@@ -30,6 +33,7 @@ export class SessionTemplateDetailComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  //Formular Eingabefelder inkl. Validierung
   form = this.fb.group({
     exerciseId: [null as number | null, Validators.required],
     plannedSets: [3, [Validators.required, Validators.min(1)]],
@@ -38,6 +42,7 @@ export class SessionTemplateDetailComponent implements OnInit {
     orderIndex: [1, [Validators.required, Validators.min(1)]]
   });
 
+  // IDs lesen und Daten laden
   ngOnInit(): void {
     this.planId = Number(this.route.snapshot.paramMap.get('planId'));
     this.sessionId = Number(this.route.snapshot.paramMap.get('sessionId'));
@@ -46,6 +51,7 @@ export class SessionTemplateDetailComponent implements OnInit {
     this.loadTemplates();
   }
 
+  //ladet alle Übungen für die auswahl
   loadExercises() {
     this.service.getExercises().subscribe({
       next: (data) => {
@@ -58,6 +64,7 @@ export class SessionTemplateDetailComponent implements OnInit {
     });
   }
 
+  //ladet alle Vorlagen dieser Session
   loadTemplates() {
     this.service.getExerciseTemplatesForSession(this.sessionId).subscribe({
       next: (data) => {
@@ -122,7 +129,7 @@ export class SessionTemplateDetailComponent implements OnInit {
   }
 
   save() {
-    // Clear previous server errors
+    // entfernt alte server fehler
     this.clearServerErrors();
 
     if (this.form.invalid) {
@@ -130,6 +137,7 @@ export class SessionTemplateDetailComponent implements OnInit {
       return;
     }
 
+    //Objekt mit Werden das an Backend gesendet wird
     const payload: Partial<ExerciseExecutionTemplate> = {
       id: this.editingTemplate?.id,
       sessionId: this.sessionId,
@@ -150,7 +158,7 @@ export class SessionTemplateDetailComponent implements OnInit {
         setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err) => {
-        // Map backend validation errors to form controls
+        // backend validierungsfehler auf passende formularfelder legen
         try {
           if (err?.status === 400 && err?.error?.type === 'validation') {
             const fieldErrors = err.error.errors as { [key: string]: string };
@@ -177,6 +185,7 @@ export class SessionTemplateDetailComponent implements OnInit {
     });
   }
 
+  //entfernt Vorlage nach bestätigung
   delete(template: ExerciseExecutionTemplate) {
     if (!confirm(`Übung "${template.exerciseName}" wirklich aus der Session entfernen?`)) {
       return;

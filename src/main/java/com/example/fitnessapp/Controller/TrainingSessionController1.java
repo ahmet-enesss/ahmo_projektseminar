@@ -12,18 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
-@SuppressWarnings("unused")
 @RestController
 @RequestMapping("/api/trainingsessions")
 public class TrainingSessionController1 {
 
     //Verbindung zu der Serviceschicht
-    private TrainingSessionService1 trainingSessionService;
-
     @Autowired
-    public TrainingSessionController1(TrainingSessionService1 trainingSessionService) {
-        this.trainingSessionService = trainingSessionService;
-    }
+    private TrainingSessionService1 trainingSessionService;
 
     //Gibt eine Liste aller gespeicherten Trainingssessions zurück
     @GetMapping
