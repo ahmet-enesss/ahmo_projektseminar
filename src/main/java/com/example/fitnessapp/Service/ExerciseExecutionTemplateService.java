@@ -29,14 +29,14 @@ public class ExerciseExecutionTemplateService {
         this.trainingSessionRepository = trainingSessionRepository;
         this.exerciseRepository = exerciseRepository;
     }
-
+    // holt alle Übungen als Liste einer Session und sortiert nach reihenfolge
     public List<ExerciseExecutionTemplateResponse> getForSession(Long sessionId) {
         return templateRepository.findByTrainingSession_IdOrderByOrderIndexAsc(sessionId)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
-
+    // erstellt eine neue Übungsvorlage für eine Session
     public ExerciseExecutionTemplateResponse create(ExerciseExecutionTemplateRequest request) {
         TrainingSession1 session = trainingSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "TrainingSession not found"));
@@ -44,16 +44,16 @@ public class ExerciseExecutionTemplateService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
 
         validate(request);
-
+        // prüfe, ob der orderIndex in der Session bereits verwendet wird
         if (templateRepository.existsByTrainingSession_IdAndOrderIndex(session.getId(), request.getOrderIndex())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order index already used in this session");
         }
 
-        // Neu: prüfe, ob diese Übung bereits in der Session existiert
+        // prüft ob diese Übung bereits in der Session existiert
         if (templateRepository.existsByTrainingSession_IdAndExercise_Id(session.getId(), exercise.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise already added to this session");
         }
-
+        // baut eine neue Entity aus dem Request-Daten
         ExerciseExecutionTemplate entity = ExerciseExecutionTemplate.builder()
                 .trainingSession(session)
                 .exercise(exercise)
@@ -65,13 +65,13 @@ public class ExerciseExecutionTemplateService {
 
         return toResponse(templateRepository.save(entity));
     }
-
+    // aktualisiert eine bestehende Übungsvorlage
     public ExerciseExecutionTemplateResponse update(Long id, ExerciseExecutionTemplateRequest request) {
         ExerciseExecutionTemplate existing = templateRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Template not found"));
 
         validate(request);
-
+        // Prüft nur dann auf Konflikt, wenn der orderIndex geändert wurde
         if (!existing.getOrderIndex().equals(request.getOrderIndex()) &&
                 templateRepository.existsByTrainingSession_IdAndOrderIndex(existing.getTrainingSession().getId(),
                         request.getOrderIndex())) {
@@ -81,7 +81,7 @@ public class ExerciseExecutionTemplateService {
         Exercise1 exercise = exerciseRepository.findById(request.getExerciseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
 
-        // Neu: prüfe beim Update, ob durch Änderung der Übung ein Duplikat entsteht
+        // prüfe beim Update, ob durch Änderung der Übung ein Duplikat entsteht
         if (!existing.getExercise().getId().equals(exercise.getId()) &&
                 templateRepository.existsByTrainingSession_IdAndExercise_Id(existing.getTrainingSession().getId(), exercise.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise already added to this session");
@@ -95,11 +95,11 @@ public class ExerciseExecutionTemplateService {
 
         return toResponse(templateRepository.save(existing));
     }
-
+    // löscht eine Übungsvorlage anhand der ID
     public void delete(Long id) {
         templateRepository.deleteById(id);
     }
-
+    // Prüft ob alle pflichtwerte gültig sind
     private void validate(ExerciseExecutionTemplateRequest request) {
         if (request.getPlannedSets() == null || request.getPlannedSets() <= 0 ||
                 request.getPlannedReps() == null || request.getPlannedReps() <= 0 ||
@@ -108,7 +108,7 @@ public class ExerciseExecutionTemplateService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid planned values");
         }
     }
-
+    // Wandelt eine Entity in ein Response-DTO um
     private ExerciseExecutionTemplateResponse toResponse(ExerciseExecutionTemplate template) {
         return ExerciseExecutionTemplateResponse.builder()
                 .id(template.getId())

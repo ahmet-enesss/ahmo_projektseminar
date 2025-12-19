@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 public class ExerciseService1 {
-//hallo
+
     @Autowired
     private ExerciseRepository1 exerciseRepository;
 
@@ -25,7 +25,7 @@ public class ExerciseService1 {
         return exerciseRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
     }
-
+    // Erstellt neue Übung
     @Transactional
     public Exercise1 createExercise(ExerciseRequest request) {
         if (exerciseRepository.findByName(request.getName()).isPresent()) {
@@ -40,7 +40,7 @@ public class ExerciseService1 {
                 .build();
         return exerciseRepository.save(exercise);
     }
-
+    // Aktualisiert bestehende Übung
     @Transactional
     public Exercise1 updateExercise(Long id, ExerciseRequest request) {
         Exercise1 existing = getExerciseById(id);
@@ -54,13 +54,13 @@ public class ExerciseService1 {
         existing.setDescription(request.getDescription());
         return exerciseRepository.save(existing);
     }
-
+    // Löscht Übung
     @Transactional
     public void deleteExercise(Long id) {
         Exercise1 existing = getExerciseById(id);
         exerciseRepository.delete(existing);
     }
-
+    // Validiert die Eingabedaten
     private void validateRequest(ExerciseRequest request) {
         if (request.getName() == null || request.getName().isBlank()
                 || request.getCategory() == null || request.getCategory().isBlank()) {

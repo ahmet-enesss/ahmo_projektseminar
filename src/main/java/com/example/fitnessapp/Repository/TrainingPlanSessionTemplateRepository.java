@@ -13,7 +13,7 @@ public interface TrainingPlanSessionTemplateRepository extends JpaRepository<Tra
     Optional<TrainingPlanSessionTemplate> findByTrainingPlan_IdAndTrainingSession_Id(Long planId, Long sessionId);
     long countByTrainingPlan_Id(Long planId);
 
-    // Neu: Links nach SessionId
+    // Links nach SessionId
     List<TrainingPlanSessionTemplate> findByTrainingSession_Id(Long sessionId);
     void deleteByTrainingSession_Id(Long sessionId);
 }
