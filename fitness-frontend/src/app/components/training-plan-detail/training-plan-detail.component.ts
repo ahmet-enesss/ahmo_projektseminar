@@ -138,10 +138,18 @@ export class TrainingPlanDetailComponent implements OnInit {
   }
 
   // Hinzufügen vorhandener Vorlage in den Plan (Referenz) - verwendet das templateControl
-  addExistingTemplateToPlan() {
+  addExistingTemplateToPlan(selectedTemplateId?: number | string) {
+    // Unterstützt Aufrufe aus der Template (mit templateRef value) oder die Nutzung des templateControl
     if (!this.plan) return;
-    const templateId = Number(this.templateControl.value);
+
+    // Wenn eine ID aus dem Template-Ref übergeben wurde, verwende diese, sonst die formControl-Value
+    let templateIdRaw = selectedTemplateId !== undefined && selectedTemplateId !== null && selectedTemplateId !== ''
+      ? selectedTemplateId
+      : this.templateControl.value;
+
+    const templateId = Number(templateIdRaw);
     if (!templateId || isNaN(templateId)) return;
+
     // optional: position aus UI (nicht implementiert hier, verwendet default null)
     this.service.addTemplateToPlan(this.plan.id, templateId).subscribe({
       next: () => {
