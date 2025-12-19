@@ -34,6 +34,7 @@ export interface TrainingPlanDetail {
   sessions: TrainingSessionSummary[];
   hasSessions: boolean;
   sessionsHint: string;
+  templates?: { id: number; name: string; position?: number }[]; // neu: referenzierte Session-Templates
 }
 
 export interface TrainingPlanRequest {

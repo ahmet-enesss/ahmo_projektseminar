@@ -205,4 +205,5 @@ export class SessionTemplateDetailComponent implements OnInit {
   goBack() {
     this.location.back();
   }
+
 }

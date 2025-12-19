@@ -15,6 +15,3 @@ public class TrainingPlanDetailResponse {
     private boolean hasSessions;
     private String sessionsHint;
 }
-
-
-

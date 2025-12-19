@@ -22,7 +22,7 @@ public class TrainingSession1 {
     private TrainingPlan1 trainingPlan;
 
     //Name der Trainingssession-Vorlage
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true) // Neu: global eindeutiger Name
     private String name;
 
     //Reihenfolge innerhalb des Plans (1-30)

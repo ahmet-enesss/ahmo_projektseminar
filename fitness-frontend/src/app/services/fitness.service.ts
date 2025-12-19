@@ -205,6 +205,17 @@ export class FitnessService {
       .pipe(catchError(this.handleError));
   }
 
+  // Neu: Template in Plan übernehmen (Referenz, kein Kopieren)
+  addTemplateToPlan(planId: number, templateId: number, position?: number) {
+    return this.http.post(`${this.baseUrl}/trainingplans/${planId}/templates`, { templateId, position })
+      .pipe(catchError(this.handleError));
+  }
+
+  removeTemplateFromPlan(planId: number, templateId: number) {
+    return this.http.delete(`${this.baseUrl}/trainingplans/${planId}/templates/${templateId}`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Ein unbekannter Fehler ist aufgetreten.';
     if (error.status === 400 || error.status === 409) {

@@ -28,4 +28,8 @@ public interface TrainingSessionRepository1 extends JpaRepository<TrainingSessio
     //Anzahl SessionLogs für eine Session-Vorlage
     @Query("SELECT COUNT(sl) FROM SessionLog sl WHERE sl.templateSession.id = :sessionId")
     long countExecutionsBySessionId(@Param("sessionId") Long sessionId);
+
+    // Neu: Suche nach Name (globale Einzigartigkeit)
+    Optional<TrainingSession1> findByName(String name);
+    Optional<TrainingSession1> findByNameAndIdNot(String name, Long id);
 }

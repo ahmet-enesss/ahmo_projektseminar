@@ -23,6 +23,7 @@ export class TrainingPlanDetailComponent implements OnInit {
   //speichert geladene Trainingsplan und Liste verfügbaren Übungen
   plan: TrainingPlanDetail | null = null;
   availableExercises: Exercise[] = [];
+  availableTemplates: { id: number; name: string; orderIndex: number }[] = [];
 
   successMessage = '';
   errorMessage = '';
@@ -42,11 +43,25 @@ export class TrainingPlanDetailComponent implements OnInit {
   ngOnInit() {
     this.loadPlanData();
     this.loadExercises();
+    this.loadAllSessionTemplates();
   }
 
   loadExercises() {
     this.service.getExercises().subscribe(data => {
       this.availableExercises = data;
+    });
+  }
+
+  loadAllSessionTemplates() {
+    this.service.getSessionTemplates().subscribe({
+      next: (data) => {
+        this.availableTemplates = data.map(t => ({ id: t.id, name: t.name, orderIndex: t.orderIndex }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        // Nicht kritisch
+        console.warn('Fehler beim Laden der Session-Vorlagen:', err.message);
+      }
     });
   }
 
@@ -107,6 +122,32 @@ export class TrainingPlanDetailComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage = err.message;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // Hilfsfunktion: Templates, die noch nicht im Plan sind
+  getTemplatesNotInPlan() {
+    if (!this.plan) return this.availableTemplates;
+    const existingIds = new Set<number>((this.plan.templates || []).map(p => p.id));
+    return this.availableTemplates.filter(t => !existingIds.has(t.id));
+  }
+
+  // Hinzufügen vorhandener Vorlage in den Plan (Referenz)
+  addExistingTemplateToPlan(templateIdStr: string) {
+    if (!this.plan) return;
+    const templateId = Number(templateIdStr);
+    if (!templateId || isNaN(templateId)) return;
+    // optional: position aus UI (nicht implementiert hier, verwendet default null)
+    this.service.addTemplateToPlan(this.plan.id, templateId).subscribe({
+      next: () => {
+        this.successMessage = 'Vorlage in Plan aufgenommen';
+        this.loadPlanData();
+        setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: (err) => {
+        this.errorMessage = err.message || 'Fehler beim Hinzufügen der Vorlage';
         this.cdr.detectChanges();
       }
     });
