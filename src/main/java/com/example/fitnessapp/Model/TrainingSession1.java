@@ -5,14 +5,14 @@ import lombok.*;
 
 import java.util.Set;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity//Kennzeichnet die Klasse als JPA-Entity
+@Getter //Generiert automatisch Getter-Methoden
+@Setter //Generiert automatisch Setter-Methoden
+@NoArgsConstructor //Erstellt einen parameterlosen Konstruktor
+@AllArgsConstructor // Erstellt einen Konstruktor mit allen Parametern
+@Builder //Ermöglicht das Erstellen von Objekten mit dem Builder-Pattern
 public class TrainingSession1 {
-    @Id
+    @Id // Markiert das Feld als Primärschlüssel
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

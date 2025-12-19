@@ -14,24 +14,30 @@ import java.util.List;
 @Service
 public class ExerciseService1 {
 
+    //Zugriff auf die Übungsdatenbank
     @Autowired
     private ExerciseRepository1 exerciseRepository;
 
+    //Gibt alle Übungen zurück
     public List<Exercise1> getAllExercises() {
         return exerciseRepository.findAll();
     }
-
+    //Holt eine Übung per ID oder wirft 404
     public Exercise1 getExerciseById(Long id) {
         return exerciseRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Exercise not found"));
     }
 
+    //Erstellt neue Übung
     @Transactional
     public Exercise1 createExercise(ExerciseRequest request) {
+        //verhindert doppelte Namen
         if (exerciseRepository.findByName(request.getName()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise with this name already exists");
         }
+        //Prüft Pflichtfelder
         validateRequest(request);
+        //Erstellt neue Entity
         Exercise1 exercise = Exercise1.builder()
                 .name(request.getName())
                 .category(request.getCategory())
@@ -40,27 +46,29 @@ public class ExerciseService1 {
                 .build();
         return exerciseRepository.save(exercise);
     }
-
+    //Aktualisiert bestehende Übung
     @Transactional
     public Exercise1 updateExercise(Long id, ExerciseRequest request) {
         Exercise1 existing = getExerciseById(id);
-        validateRequest(request);
+        validateRequest(request);//Prüft Pflichtfelder
+        //Prüft Namenskonflikt
         if (exerciseRepository.findByNameAndIdNot(request.getName(), id).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exercise with this name already exists");
         }
+        //Felder aktualisieren
         existing.setName(request.getName());
         existing.setCategory(request.getCategory());
         existing.setMuscleGroups(request.getMuscleGroups());
         existing.setDescription(request.getDescription());
         return exerciseRepository.save(existing);
     }
-
+    //Löscht eine Übung
     @Transactional
     public void deleteExercise(Long id) {
         Exercise1 existing = getExerciseById(id);
         exerciseRepository.delete(existing);
     }
-
+    //Validiert die Eingabdaten
     private void validateRequest(ExerciseRequest request) {
         if (request.getName() == null || request.getName().isBlank()
                 || request.getCategory() == null || request.getCategory().isBlank()) {

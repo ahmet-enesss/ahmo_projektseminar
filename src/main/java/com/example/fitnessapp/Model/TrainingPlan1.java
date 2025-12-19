@@ -7,13 +7,13 @@ import lombok.*;
 import java.util.List;
 
 @Entity //markiert die Klasse als JPA-Entität und somit in der Datenbank gespeichert
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter //Generiert automatisch Getter-Methoden
+@Setter //Generiert automatisch Setter-Methoden
+@NoArgsConstructor //Erstellt einen parameterlosen Konstruktor
+@AllArgsConstructor // Erstellt einen Konstruktor mit allen Parametern
+@Builder //Ermöglicht das Erstellen von Objekten mit dem Builder-Pattern
 public class TrainingPlan1 {
-    @Id
+    @Id // Markiert das Feld als Primärschlüssel
     @GeneratedValue(strategy = GenerationType.IDENTITY)//autom. erstellung von IDs durch die Datenbank
     private Long id;
 
