@@ -5,6 +5,20 @@
       <a class="nav-link" routerLink="/exercises" routerLinkActive="active">Übungen</a>
       <a class="nav-link" routerLink="/plans" routerLinkActive="active">Trainingspläne</a>
       <a class="nav-link" routerLink="/sessions" routerLinkActive="active">Trainingssessions</a>
+      <a class="nav-link" routerLink="/history" routerLinkActive="active" *ngIf="isLoggedIn">Trainingshistorie</a>
+    </div>
+    <div class="navbar-nav ms-auto">
+      <ng-container *ngIf="isLoggedIn; else notLoggedIn">
+        <span class="navbar-text me-3 text-light">
+          Eingeloggt als: <strong>{{ username }}</strong>
+        </span>
+        <button class="btn btn-outline-light btn-sm" (click)="authService.logout()">
+          Abmelden
+        </button>
+      </ng-container>
+      <ng-template #notLoggedIn>
+        <a class="nav-link" routerLink="/login">Anmelden</a>
+      </ng-template>
     </div>
   </div>
 </nav>

@@ -11,6 +11,7 @@ public class ExecutionLogUpdateRequest {
     @NotNull
     private Long executionLogId;
     // ID des zu aktualisierenden Execution-Logs (Pflichtfeld)
+    // Wenn negativ oder nicht vorhanden, wird ein neuer Eintrag erstellt
 
     @NotNull
     @Positive
@@ -27,6 +28,10 @@ public class ExecutionLogUpdateRequest {
     private Boolean completed; // Optional: Kennzeichnet, ob die Übung abgeschlossen ist
 
     private String notes; // Optional: Freitext-Notizen zur Übungsausführung
+
+    // Optionale Felder für die Erstellung eines neuen ExecutionLogs
+    private Long sessionLogId; // Wird benötigt, wenn executionLogId nicht existiert
+    private Long exerciseTemplateId; // Wird benötigt, wenn executionLogId nicht existiert
 }
 
 

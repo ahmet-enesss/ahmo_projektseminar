@@ -83,6 +83,15 @@ export interface SessionLog {
   executions: ExecutionLog[];
 }
 
+export interface SessionLogSummary {
+  id: number;
+  sessionTemplateId: number;
+  sessionName: string;
+  startTime: string;
+  endTime?: string;
+  status: LogStatus;
+}
+
 // --- Session-Template Übersicht (Sprint 3) ---
 
 export interface TrainingSessionTemplateOverview {

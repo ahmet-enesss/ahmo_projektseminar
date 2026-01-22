@@ -1,0 +1,50 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Trainingshistorie</h2>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Lädt...</span>
+    </div>
+    <p class="mt-2">Trainingshistorie wird geladen...</p>
+  </div>
+
+  <div *ngIf="!loading && history.length === 0" class="alert alert-info">
+    <strong>Keine Trainingshistorie vorhanden.</strong><br>
+    Du hast noch keine Trainings abgeschlossen. Starte ein Training, um es hier zu sehen.
+  </div>
+
+  <div *ngIf="!loading && history.length > 0" class="table-responsive">
+    <table class="table table-bordered table-hover align-middle bg-white">
+      <thead class="table-dark">
+        <tr>
+          <th>Session-Name</th>
+          <th>Startzeit</th>
+          <th>Endzeit</th>
+          <th>Dauer</th>
+          <th>Status</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of history">
+          <td>
+            <strong>{{ log.sessionName }}</strong>
+          </td>
+          <td>{{ formatDate(log.startTime) }}</td>
+          <td>{{ formatDate(log.endTime || '') }}</td>
+          <td>{{ getDuration(log.startTime, log.endTime) }}</td>
+          <td>
+            <span class="badge bg-success">Abgeschlossen</span>
+          </td>
+          <td>
+            <a [routerLink]="['/training/log', log.id]" class="btn btn-sm btn-primary">
+              Details anzeigen
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

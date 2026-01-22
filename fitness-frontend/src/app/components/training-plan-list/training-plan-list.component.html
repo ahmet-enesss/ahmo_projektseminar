@@ -3,7 +3,7 @@
 
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
-  <div class="card mb-4">
+  <div class="card mb-4" *ngIf="isLoggedIn">
     <div class="card-header">Neuen Plan anlegen</div>
     <div class="card-body">
       <form [formGroup]="planForm" (ngSubmit)="createPlan()">
@@ -41,7 +41,7 @@
 
           <a [routerLink]="['/plans', plan.id]" class="btn btn-info btn-sm me-2">Details / Sessions</a>
 
-          <button class="btn btn-danger btn-sm" (click)="deletePlan(plan)">Löschen</button>
+          <button *ngIf="isLoggedIn" class="btn btn-danger btn-sm" (click)="deletePlan(plan)">Löschen</button>
         </div>
       </div>
     </div>

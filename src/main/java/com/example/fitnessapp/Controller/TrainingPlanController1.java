@@ -2,6 +2,7 @@ package com.example.fitnessapp.Controller;
 
 import com.example.fitnessapp.DTOs.TrainingPlanRequest;
 import com.example.fitnessapp.DTOs.TrainingPlanDetailResponse;
+import com.example.fitnessapp.Security.RequiresAuth;
 import com.example.fitnessapp.Service.TrainingPlanService1;
 import com.example.fitnessapp.DTOs.TrainingPlanOverviewResponse;
 import com.example.fitnessapp.Model.TrainingPlan1;
@@ -36,6 +37,7 @@ public class TrainingPlanController1 {
     }
 
     @PostMapping // Methode die einen neuen Trainingsplan erstellt
+    @RequiresAuth
     public ResponseEntity<?> createTrainingPlan(
             @Valid @RequestBody TrainingPlanRequest request,//validiert eingehende Daten
             BindingResult bindingResult) {
@@ -53,6 +55,7 @@ public class TrainingPlanController1 {
     }
 
     @PutMapping("/{id}")
+    @RequiresAuth
     public ResponseEntity<?> updateTrainingPlan(@PathVariable Long id,
                                                 @Valid @RequestBody TrainingPlanRequest request,
                                                 BindingResult bindingResult) {
@@ -68,6 +71,7 @@ public class TrainingPlanController1 {
     }
 
     @DeleteMapping("/{id}")
+    @RequiresAuth
     public ResponseEntity<Void> deleteTrainingPlan(@PathVariable Long id) {
         trainingPlanService.deleteTrainingPlan(id);
         return ResponseEntity.noContent().build();
@@ -75,6 +79,7 @@ public class TrainingPlanController1 {
 
     // Neuer Endpunkt: Template in Plan aufnehmen
     @PostMapping("/{id}/templates")
+    @RequiresAuth
     public ResponseEntity<?> addTemplateToPlan(@PathVariable Long id,
                                                @RequestBody AddTemplateToPlanRequest request) {
         trainingPlanService.addTemplateToPlan(id, request.getTemplateId(), request.getPosition());
@@ -83,6 +88,7 @@ public class TrainingPlanController1 {
 
     // Neuer Endpunkt: Template aus Plan entfernen
     @DeleteMapping("/{id}/templates/{templateId}")
+    @RequiresAuth
     public ResponseEntity<?> removeTemplateFromPlan(@PathVariable Long id,
                                                     @PathVariable Long templateId) {
         trainingPlanService.removeTemplateFromPlan(id, templateId);

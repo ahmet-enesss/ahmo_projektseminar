@@ -3,6 +3,7 @@ package com.example.fitnessapp.Controller;
 
 import com.example.fitnessapp.DTOs.ExerciseRequest;
 import com.example.fitnessapp.Model.Exercise1;
+import com.example.fitnessapp.Security.RequiresAuth;
 import com.example.fitnessapp.Service.ExerciseService1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,12 +31,14 @@ public class ExerciseController1 {
     }
 
     @PostMapping // POST-Anfrage auf /api/exercises -> erstellt eine neue Übung
+    @RequiresAuth
     public ResponseEntity<Exercise1> createExercise(@Valid @RequestBody ExerciseRequest exercise) {
         Exercise1 created = exerciseService1.createExercise(exercise);  // Gibt die neu erstellte Übung zurück mit HTTP-Status 201
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
+    @RequiresAuth
     public ResponseEntity<java.util.Map<String, Object>> updateExercise(@PathVariable Long id,
                                                                         @Valid @RequestBody ExerciseRequest request) {
         Exercise1 updated = exerciseService1.updateExercise(id, request);
@@ -46,6 +49,7 @@ public class ExerciseController1 {
     }
 
     @DeleteMapping("/{id}")
+    @RequiresAuth
     public ResponseEntity<Void> deleteExercise(@PathVariable Long id) {
         exerciseService1.deleteExercise(id);
         return ResponseEntity.noContent().build();

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FitnessService } from '../../services/fitness.service';
+import { AuthService } from '../../services/auth.service';
 import { TrainingPlanOverview } from '../../models/fitness.models';
 
 //verbindet ts mit html und css
@@ -15,12 +16,14 @@ import { TrainingPlanOverview } from '../../models/fitness.models';
 })
 export class TrainingPlanListComponent implements OnInit {
   private service = inject(FitnessService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef); // <--- 2. Hier injizieren wir den "Wecker"
 
   //enthält geladene Pläne
   plans: TrainingPlanOverview[] = [];
   errorMessage = '';
+  isLoggedIn = false;
 
   //eingabe für neue Trainingsplan
   planForm = this.fb.group({
@@ -29,6 +32,11 @@ export class TrainingPlanListComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.isLoggedIn = this.authService.isLoggedIn();
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isLoggedIn = isAuth;
+      this.cdr.detectChanges();
+    });
     this.loadPlans();
   }
 

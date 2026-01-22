@@ -3,7 +3,7 @@
 
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
 
-  <div class="card mb-4">
+  <div class="card mb-4" *ngIf="isLoggedIn">
     <div class="card-header">Neue Übung erstellen</div>
     <div class="card-body">
       <form [formGroup]="exerciseForm" (ngSubmit)="createExercise()">
@@ -81,7 +81,7 @@
         <span *ngFor="let mg of ex.muscleGroups" class="badge bg-secondary me-1">{{ mg }}</span>
       </td>
       <td>
-        <button class="btn btn-danger btn-sm" (click)="deleteExercise(ex)">Löschen</button>
+        <button *ngIf="isLoggedIn" class="btn btn-danger btn-sm" (click)="deleteExercise(ex)">Löschen</button>
       </td>
     </tr>
     <tr *ngIf="exercises.length === 0">

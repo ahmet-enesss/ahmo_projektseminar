@@ -136,10 +136,22 @@ export class TrainingExecutionComponent implements OnInit {
     if (!this.log) return;
     this.executionForms.clear();
     this.log.executions.forEach(exec => this.buildFormForExecution(exec));
+    // Deaktiviere alle Formulare, wenn Session abgeschlossen ist
+    if (this.isCompleted()) {
+      this.executionForms.forEach(form => form.disable());
+    }
   }
 
   saveExecution(exec: ExecutionLog) {
     if (!this.log) return;
+    
+    // Verhindere Speichern, wenn Session abgeschlossen ist
+    if (this.isCompleted()) {
+      this.errorMessage = 'Das Training ist bereits abgeschlossen. Änderungen sind nicht mehr möglich.';
+      this.cdr.detectChanges();
+      return;
+    }
+    
     const form = this.executionForms.get(exec.id);
     if (!form || form.invalid) {
       form?.markAllAsTouched();
@@ -147,23 +159,42 @@ export class TrainingExecutionComponent implements OnInit {
     }
 
     const value = form.value;
-    this.service.updateExecutionLog({
+    const payload: any = {
       executionLogId: exec.id,
       // aktuelle values
       actualSets: value.actualSets,
       actualReps: value.actualReps,
       actualWeight: value.actualWeight,
       // optional: mark completed and notes
-      completed: value.completed,
+      completed: value.completed ?? false,
       notes: value.notes,
       // neu: geplante Werte mitschicken, wenn verändert
       plannedSets: value.plannedSets,
       plannedReps: value.plannedReps,
       plannedWeight: value.plannedWeight
-    }).subscribe({
-      next: () => {
+    };
+
+    // Wenn executionLogId negativ ist (Fallback), sende sessionLogId und exerciseTemplateId mit
+    if (exec.id < 0) {
+      payload.sessionLogId = this.log.id;
+      payload.exerciseTemplateId = exec.exerciseTemplateId;
+    }
+
+    this.service.updateExecutionLog(payload).subscribe({
+      next: (updatedExec) => {
         this.successMessage = 'Übung gespeichert';
         this.errorMessage = '';
+        // Wenn ein neuer ExecutionLog erstellt wurde, lade den Log neu
+        if (exec.id < 0) {
+          this.loadLog();
+        } else {
+          // Aktualisiere den ExecutionLog in der Liste
+          const index = this.log!.executions.findIndex(e => e.id === exec.id);
+          if (index !== -1) {
+            this.log!.executions[index] = updatedExec;
+            this.buildFormForExecution(updatedExec);
+          }
+        }
         setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 2000);
       },
       error: (err) => {

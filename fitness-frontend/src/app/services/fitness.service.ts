@@ -5,7 +5,7 @@ import { catchError } from 'rxjs/operators';
 import {
   Exercise, ExerciseRequest,
   TrainingPlanOverview, TrainingPlanDetail, TrainingPlanRequest,
-  ExerciseExecutionTemplate, SessionLog, ExecutionLog,
+  ExerciseExecutionTemplate, SessionLog, ExecutionLog, SessionLogSummary,
   TrainingSessionTemplateOverview, TrainingSessionTemplateRequest
 } from '../models/fitness.models';
 
@@ -155,6 +155,9 @@ export class FitnessService {
     plannedSets?: number;
     plannedReps?: number;
     plannedWeight?: number;
+    // optional für Erstellung neuer ExecutionLogs (wenn executionLogId negativ/nicht vorhanden)
+    sessionLogId?: number;
+    exerciseTemplateId?: number;
   }): Observable<ExecutionLog> {
     return this.http
       .put<ExecutionLog>(`${this.baseUrl}/sessionlogs/execution`, payload)
@@ -170,6 +173,13 @@ export class FitnessService {
   abortTraining(logId: number): Observable<void> {
     return this.http
       .delete<void>(`${this.baseUrl}/sessionlogs/${logId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // --- Training History ---
+  getTrainingHistory(): Observable<SessionLogSummary[]> {
+    return this.http
+      .get<SessionLogSummary[]>(`${this.baseUrl}/sessionlogs/history`)
       .pipe(catchError(this.handleError));
   }
 

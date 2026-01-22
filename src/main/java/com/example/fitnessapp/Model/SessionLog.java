@@ -22,6 +22,12 @@ public class SessionLog {
     @ManyToOne(optional = false)
     @JoinColumn(name = "training_session_id")
     private TrainingSession1 templateSession;
+    
+    // Benutzer, dem diese Session zugeordnet ist (User-Isolation)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
+    
     // Startzeit
     private LocalDateTime startTime;
     // Endzeit

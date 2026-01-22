@@ -6,7 +6,11 @@
   <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div> //Erfolgsmeldung
   <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div> //Fehlermeldung
 
-  <form [formGroup]="editForm" (ngSubmit)="saveChanges()"> //Formular, Reactive-Form mit editForm verbunden //Beim Absenden saveChanges() ausgeführt
+  <div *ngIf="!isLoggedIn" class="alert alert-info">
+    Sie müssen angemeldet sein, um Übungen zu bearbeiten.
+  </div>
+
+  <form *ngIf="isLoggedIn" [formGroup]="editForm" (ngSubmit)="saveChanges()"> //Formular, Reactive-Form mit editForm verbunden //Beim Absenden saveChanges() ausgeführt
 
     <div class="mb-3"> //Eingabebereich Name der Übung
       <label class="form-label">Name</label> //Beschriftung Eingabebereich

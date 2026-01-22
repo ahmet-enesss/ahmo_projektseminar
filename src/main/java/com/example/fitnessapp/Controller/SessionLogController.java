@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController // REST-Controller für das Logging und die Steuerung von Trainingseinheiten
 @RequestMapping("/api/sessionlogs") // Basis-URL für alle Session-Log-Endpunkte
 public class SessionLogController {
@@ -19,6 +21,11 @@ public class SessionLogController {
     @PostMapping("/start") // Startet eine neue Trainingseinheit (Session-Log)
     public SessionLogDetailResponse start(@Valid @RequestBody SessionLogCreateRequest request) { // Validierter Request zum Starten einer Session
         return service.start(request);   // Delegiert den Start der Session an den Service
+    }
+
+    @GetMapping("/history") // Liefert die Trainingshistorie des angemeldeten Benutzers
+    public List<SessionLogSummaryResponse> getHistory() { // Trainingshistorie (nur eigene Sessions)
+        return service.getTrainingHistory(); // Ruft die Historie über den Service ab
     }
 
     @GetMapping("/{id}")  // Liefert Detailinformationen zu einer laufenden oder abgeschlossenen Session

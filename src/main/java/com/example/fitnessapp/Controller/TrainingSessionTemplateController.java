@@ -2,6 +2,7 @@ package com.example.fitnessapp.Controller;
 
 import com.example.fitnessapp.DTOs.TrainingSessionTemplateOverviewResponse;
 import com.example.fitnessapp.DTOs.TrainingSessionTemplateRequest;
+import com.example.fitnessapp.Security.RequiresAuth;
 import com.example.fitnessapp.Service.TrainingSessionTemplateService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class TrainingSessionTemplateController {
     }
 
     @PostMapping // Erstellt ein neues Trainingssession-Template
+    @RequiresAuth
     public ResponseEntity<TrainingSessionTemplateOverviewResponse> createSession(
             @Valid @RequestBody TrainingSessionTemplateRequest request) { // Validierter Request-Body mit Template-Daten
         TrainingSessionTemplateOverviewResponse created = service.createSession(request);
@@ -39,6 +41,7 @@ public class TrainingSessionTemplateController {
     }
 
     @PutMapping("/{id}")  // Aktualisiert ein bestehendes Trainingssession-Template
+    @RequiresAuth
     public TrainingSessionTemplateOverviewResponse updateSession(
             @PathVariable Long id,  // ID des zu aktualisierenden Templates
             @Valid @RequestBody TrainingSessionTemplateRequest request) { // Validierter Request-Body mit neuen Daten
@@ -46,6 +49,7 @@ public class TrainingSessionTemplateController {
     }
 
     @DeleteMapping("/{id}")   // Löscht ein Trainingssession-Template
+    @RequiresAuth
     public ResponseEntity<Void> deleteSession(@PathVariable Long id) { // ID des zu löschenden Templates
         service.deleteSession(id); // Löscht das Template über den Service
         return ResponseEntity.noContent().build(); // HTTP 204 No Content als Bestätigung

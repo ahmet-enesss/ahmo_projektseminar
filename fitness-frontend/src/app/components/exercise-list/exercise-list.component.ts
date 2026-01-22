@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FitnessService } from '../../services/fitness.service';
+import { AuthService } from '../../services/auth.service';
 import { Exercise } from '../../models/fitness.models';
 
 @Component({
@@ -14,11 +15,13 @@ import { Exercise } from '../../models/fitness.models';
 })
 export class ExerciseListComponent implements OnInit {
   private service = inject(FitnessService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
   exercises: Exercise[] = [];
   errorMessage = '';
+  isLoggedIn = false;
 
   // Die festen Kategorien
   categories = ['Gerät', 'Freihantel', 'Körpergewicht'];
@@ -31,6 +34,11 @@ export class ExerciseListComponent implements OnInit {
   });
 
   ngOnInit() {
+    this.isLoggedIn = this.authService.isLoggedIn();
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isLoggedIn = isAuth;
+      this.cdr.detectChanges();
+    });
     this.loadExercises();
     // Standardwert für Dropdown setzen
     this.exerciseForm.get('category')?.setValue(this.categories[0]);

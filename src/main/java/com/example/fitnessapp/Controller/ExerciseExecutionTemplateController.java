@@ -2,6 +2,7 @@ package com.example.fitnessapp.Controller;
 
 import com.example.fitnessapp.DTOs.ExerciseExecutionTemplateRequest;
 import com.example.fitnessapp.DTOs.ExerciseExecutionTemplateResponse;
+import com.example.fitnessapp.Security.RequiresAuth;
 import com.example.fitnessapp.Service.ExerciseExecutionTemplateService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class ExerciseExecutionTemplateController {
     }
 
     @PostMapping // POST-Endpunkt zum Erstellen eines neuen Exercise-Templates
+    @RequiresAuth
     public ResponseEntity<ExerciseExecutionTemplateResponse> create(@PathVariable Long sessionId,  // sessionId aus der URL
                                                                     @Valid @RequestBody ExerciseExecutionTemplateRequest request) { // Request-Body wird validiert (@Valid)
         request.setSessionId(sessionId); // Setzt die sessionId aus der URL in das Request-Objekt
@@ -32,6 +34,7 @@ public class ExerciseExecutionTemplateController {
     }
 
     @PutMapping("/{id}") // PUT-Endpunkt zum Aktualisieren eines bestehenden Exercise-Templates
+    @RequiresAuth
     public ExerciseExecutionTemplateResponse update(@PathVariable Long sessionId, // ID des zu aktualisierenden Templates
                                                     @PathVariable Long id, // Validierter Request-Body
                                                     @Valid @RequestBody ExerciseExecutionTemplateRequest request) {
@@ -40,6 +43,7 @@ public class ExerciseExecutionTemplateController {
     }
 
     @DeleteMapping("/{id}")   // DELETE-Endpunkt zum Löschen eines Exercise-Templates
+    @RequiresAuth
     public ResponseEntity<Void> delete(@PathVariable Long id) { // Löscht das Template anhand der ID
         service.delete(id);
         return ResponseEntity.noContent().build();  // Gibt HTTP 204 No Content zurück (Standard für erfolgreiche Deletes)

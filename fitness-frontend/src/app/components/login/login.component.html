@@ -1,0 +1,65 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">Anmeldung</h2>
+
+          <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+            {{ errorMessage }}
+          </div>
+
+          <div *ngIf="successMessage" class="alert alert-success" role="alert">
+            {{ successMessage }}
+          </div>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="username" class="form-label">Benutzername</label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                formControlName="username"
+                [class.is-invalid]="username?.invalid && username?.touched"
+                placeholder="Benutzername eingeben"
+              />
+              <div class="invalid-feedback" *ngIf="username?.invalid && username?.touched">
+                Benutzername ist erforderlich.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">Passwort</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                formControlName="password"
+                [class.is-invalid]="password?.invalid && password?.touched"
+                placeholder="Passwort eingeben"
+              />
+              <div class="invalid-feedback" *ngIf="password?.invalid && password?.touched">
+                Passwort ist erforderlich.
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary w-100"
+              [disabled]="loginForm.invalid"
+            >
+              Anmelden
+            </button>
+          </form>
+
+          <div class="mt-4 text-center text-muted small">
+            <p class="mb-1">Vordefinierte Benutzer:</p>
+            <p class="mb-0">max / passwort123</p>
+            <p class="mb-0">anna / passwort456</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
